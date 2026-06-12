@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acoustic-Mesh — Schizophonic Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0c0d;
+    --bg2: #111316;
+    --bg3: #181b1f;
+    --border: #272b31;
+    --border-hi: #3a3f47;
+    --amber: #e8a020;
+    --amber-dim: #a06a0a;
+    --cyan: #00d4b8;
+    --cyan-dim: #007a6a;
+    --red: #d04040;
+    --green: #38c878;
+    --text: #c8cdd4;
+    --text-dim: #707880;
+    --text-bright: #edf0f4;
+    --mono: 'Space Mono', monospace;
+    --display: 'Syne', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.5;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.04) 2px,
+      rgba(0,0,0,0.04) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* Header */
+  .header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-logo {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-bright);
+    letter-spacing: -0.5px;
+  }
+
+  .header-logo span {
+    color: var(--amber);
+  }
+
+  .header-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    flex-shrink: 0;
+  }
+  .status-dot.online { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
+  .status-dot.error  { background: var(--red); }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .header-right {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .peer-id-badge {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  .peer-id-badge strong {
+    color: var(--cyan);
+  }
+
+  /* Main layout */
+  .layout {
+    display: grid;
+    grid-template-columns: 280px 1fr 280px;
+    grid-template-rows: auto 1fr;
+    min-height: calc(100vh - 57px);
+    gap: 0;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    background: var(--bg2);
+    overflow-y: auto;
+  }
+
+  .sidebar-right {
+    border-left: 1px solid var(--border);
+    border-right: none;
+    background: var(--bg2);
+    overflow-y: auto;
+  }
+
+  .section {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Room panel */
+  .room-create {
+    display: flex;
+    gap: 8px;
+  }
+
+  .input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-bright);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 7px 10px;
+    border-radius: 3px;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+
+  .input:focus {
+    border-color: var(--amber);
+  }
+
+  .btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 7px 14px;
+    border-radius: 3px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+
+  .btn:hover { border-color: var(--amber); color: var(--amber); }
+
+  .btn.primary {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: var(--bg);
+  }
+  .btn.primary:hover { background: #f0b840; border-color: #f0b840; }
+
+  .btn.danger:hover { border-color: var(--red); color: var(--red); }
+
+  .btn.small { padding: 4px 8px; font-size: 9px; }
+
+  .room-list { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
+
+  .room-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .room-item:hover { border-color: var(--border-hi); }
+  .room-item.active { border-color: var(--amber); background: rgba(232, 160, 32, 0.06); }
+
+  .room-item-name { color: var(--text-bright); font-size: 11px; }
+  .room-item-count {
+    font-size: 9px;
+    color: var(--text-dim);
+    background: var(--bg3);
+    padding: 2px 6px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+  }
+
+  /* Agent trio */
+  .agent-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .agent-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 10px 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .agent-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+  }
+
+  .agent-card[data-agent="reson"]::before { background: var(--amber); }
+  .agent-card[data-agent="echolette"]::before { background: var(--cyan); }
+  .agent-card[data-agent="lyra"]::before { background: #8b6be8; }
+
+  .agent-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .agent-name {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text-bright);
+  }
+
+  .agent-id {
+    font-size: 9px;
+    color: var(--text-dim);
+    background: var(--bg3);
+    padding: 2px 6px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+  }
+
+  .agent-role {
+    font-size: 9px;
+    color: var(--text-dim);
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+
+  .agent-metric {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 9px;
+  }
+
+  .agent-metric-label { color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+  .agent-metric-value { color: var(--amber); font-weight: 700; }
+  .agent-card[data-agent="echolette"] .agent-metric-value { color: var(--cyan); }
+  .agent-card[data-agent="lyra"] .agent-metric-value { color: #8b6be8; }
+
+  /* Headroom bar */
+  .headroom-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+
+  .headroom-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  /* Peer list */
+  .peer-list { display: flex; flex-direction: column; gap: 4px; }
+
+  .peer-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 7px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .peer-item.self { border-color: var(--amber-dim); }
+
+  .peer-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 4px var(--green);
+    flex-shrink: 0;
+  }
+
+  .peer-name { color: var(--text-bright); font-size: 10px; flex: 1; font-family: var(--mono); }
+  .peer-self-badge {
+    font-size: 8px;
+    color: var(--amber);
+    background: rgba(232, 160, 32, 0.1);
+    border: 1px solid var(--amber-dim);
+    padding: 1px 5px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .peer-time { font-size: 9px; color: var(--text-dim); }
+
+  /* Center: waveform + mesh canvas */
+  .center {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .waveform-container {
+    height: 120px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .waveform-label {
+    position: absolute;
+    top: 10px;
+    left: 16px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    z-index: 1;
+  }
+
+  .waveform-label .val {
+    color: var(--cyan);
+    font-weight: 700;
+    font-size: 11px;
+    display: block;
+    margin-top: 2px;
+  }
+
+  #waveform-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* Phi meter */
+  .phi-meters {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .phi-meter {
+    padding: 10px 16px;
+    border-right: 1px solid var(--border);
+  }
+  .phi-meter:last-child { border-right: none; }
+
+  .phi-meter-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+
+  .phi-meter-value {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .phi-meter-value.amber { color: var(--amber); }
+  .phi-meter-value.cyan { color: var(--cyan); }
+  .phi-meter-value.green { color: var(--green); }
+
+  .phi-meter-unit { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+
+  /* Mesh canvas */
+  .mesh-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .mesh-label {
+    position: absolute;
+    bottom: 12px;
+    right: 16px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    text-align: right;
+    z-index: 1;
+  }
+
+  .mesh-label .mesh-count { color: var(--amber); font-weight: 700; }
+
+  #mesh-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .empty-state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--text-dim);
+  }
+
+  .empty-state .icon {
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .empty-state p { font-size: 11px; }
+
+  /* Join bar */
+  .join-bar {
+    padding: 12px 16px;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .join-bar .label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  #room-select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-bright);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 7px 10px;
+    border-radius: 3px;
+    outline: none;
+    flex: 1;
+    cursor: pointer;
+  }
+
+  #room-select:focus { border-color: var(--amber); }
+
+  /* Log / signal feed */
+  .signal-feed {
+    height: 180px;
+    overflow-y: auto;
+    background: var(--bg);
+    font-size: 10px;
+    padding: 0;
+  }
+
+  .signal-feed::-webkit-scrollbar { width: 4px; }
+  .signal-feed::-webkit-scrollbar-track { background: var(--bg); }
+  .signal-feed::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 2px; }
+
+  .log-line {
+    padding: 3px 14px;
+    border-bottom: 1px solid rgba(39,43,49,0.5);
+    display: flex;
+    gap: 10px;
+    animation: fadeIn 0.2s ease;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateX(-4px); } to { opacity: 1; } }
+
+  .log-time { color: var(--text-dim); white-space: nowrap; flex-shrink: 0; font-size: 9px; }
+  .log-type { flex-shrink: 0; }
+  .log-type.in  { color: var(--cyan); }
+  .log-type.out { color: var(--amber); }
+  .log-type.sys { color: var(--text-dim); }
+  .log-msg { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Signal chain status */
+  .chain-status {
+    padding: 10px 16px;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 9px;
+  }
+
+  .chain-node {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 3px 8px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .chain-node.active { border-color: var(--amber); color: var(--amber); }
+  .chain-node span { font-size: 8px; opacity: 0.7; }
+  .chain-arrow { color: var(--border-hi); flex-shrink: 0; }
+  .chain-label { margin-left: auto; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; }
+
+  /* Notification */
+  .notif {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg2);
+    border: 1px solid var(--border-hi);
+    padding: 8px 18px;
+    border-radius: 3px;
+    font-size: 11px;
+    color: var(--text-bright);
+    z-index: 9000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .notif.show { opacity: 1; }
+  .notif.ok { border-color: var(--green); color: var(--green); }
+  .notif.err { border-color: var(--red); color: var(--red); }
+
+  /* responsive */
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar-right { border-left: none; border-top: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">Acoustic<span>·</span>Mesh</div>
+  <div class="header-status">
+    <div class="status-dot" id="conn-dot"></div>
+    <span id="conn-label">OFFLINE</span>
+  </div>
+  <div class="header-right">
+    <div class="peer-id-badge">node <strong id="my-peer-id-short">—</strong></div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- LEFT SIDEBAR: rooms + agents -->
+  <aside class="sidebar">
+
+    <div class="section">
+      <div class="section-label">Rooms</div>
+      <div class="room-create">
+        <input type="text" id="room-name-input" class="input" placeholder="studio-A" maxlength="40">
+        <button class="btn primary small" onclick="createRoom()">New</button>
+      </div>
+      <div class="room-list" id="room-list"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Signal Chain</div>
+      <div class="agent-grid">
+        <div class="agent-card" data-agent="reson">
+          <div class="agent-header">
+            <div class="agent-name">Reson</div>
+            <div class="agent-id">#1</div>
+          </div>
+          <div class="agent-role">Harmonic Logic Gatekeeper</div>
+          <div class="agent-metric">
+            <span class="agent-metric-label">Headroom</span>
+            <span class="agent-metric-value" id="headroom-val">15.0%</span>
+          </div>
+          <div class="headroom-bar"><div class="headroom-fill" id="headroom-fill" style="width:85%"></div></div>
+        </div>
+        <div class="agent-card" data-agent="echolette">
+          <div class="agent-header">
+            <div class="agent-name">Echolette</div>
+            <div class="agent-id">#2</div>
+          </div>
+          <div class="agent-role">Feedback Loop Architect</div>
+          <div class="agent-metric">
+            <span class="agent-metric-label">Drift</span>
+            <span class="agent-metric-value" id="drift-val">0.0 Hz</span>
+          </div>
+        </div>
+        <div class="agent-card" data-agent="lyra">
+          <div class="agent-header">
+            <div class="agent-name">Lyra</div>
+            <div class="agent-id">#3</div>
+          </div>
+          <div class="agent-role">Harmonic Synthesizer</div>
+          <div class="agent-metric">
+            <span class="agent-metric-label">Mode</span>
+            <span class="agent-metric-value" id="mode-val">Ionian 0Hz</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- CENTER: visualization -->
+  <main class="center">
+
+    <div class="waveform-container">
+      <div class="waveform-label">
+        Phi-Harmonic Signal
+        <span class="val" id="phi-label">φ = 1.618</span>
+      </div>
+      <canvas id="waveform-canvas"></canvas>
+    </div>
+
+    <div class="phi-meters">
+      <div class="phi-meter">
+        <div class="phi-meter-label">Phi Ratio</div>
+        <div class="phi-meter-value amber" id="phi-val">1.618</div>
+        <div class="phi-meter-unit">harmonic constant</div>
+      </div>
+      <div class="phi-meter">
+        <div class="phi-meter-label">Mesh Nodes</div>
+        <div class="phi-meter-value cyan" id="node-count">0</div>
+        <div class="phi-meter-unit">active peers</div>
+      </div>
+      <div class="phi-meter">
+        <div class="phi-meter-label">Signal Rate</div>
+        <div class="phi-meter-value green" id="signal-rate">0</div>
+        <div class="phi-meter-unit">signals / min</div>
+      </div>
+    </div>
+
+    <div class="mesh-container">
+      <canvas id="mesh-canvas"></canvas>
+      <div class="empty-state" id="empty-state">
+        <div class="icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="3"/><circle cx="3" cy="12" r="2"/><circle cx="21" cy="12" r="2"/>
+            <circle cx="12" cy="3" r="2"/><circle cx="12" cy="21" r="2"/>
+            <line x1="5" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="19" y2="12"/>
+            <line x1="12" y1="5" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="19"/>
+          </svg>
+        </div>
+        <p>Join a room to connect to the mesh</p>
+      </div>
+      <div class="mesh-label">
+        <div>MESH TOPOLOGY</div>
+        <div class="mesh-count" id="mesh-count">0 nodes</div>
+      </div>
+    </div>
+
+    <div class="join-bar">
+      <span class="label">Connect to room</span>
+      <select id="room-select"><option value="">— select a room —</option></select>
+      <button class="btn primary" onclick="joinSelectedRoom()">Join</button>
+      <button class="btn danger small" onclick="leaveRoom()" id="leave-btn" style="display:none">Leave</button>
+    </div>
+
+    <div class="section-label" style="padding:8px 14px;border-top:1px solid var(--border)">Signal Feed</div>
+    <div class="signal-feed" id="signal-feed"></div>
+
+    <div class="chain-status">
+      <div class="chain-node active">Reson <span>GATE</span></div>
+      <div class="chain-arrow">→</div>
+      <div class="chain-node active">Echolette <span>LOOP</span></div>
+      <div class="chain-arrow">→</div>
+      <div class="chain-node active">Lyra <span>SYNTH</span></div>
+      <span class="chain-label">SCHIZOPHONIC STUDIO</span>
+    </div>
+
+  </main>
+
+  <!-- RIGHT SIDEBAR: peers -->
+  <aside class="sidebar sidebar-right">
+
+    <div class="section">
+      <div class="section-label">Peers in Room</div>
+      <div class="peer-list" id="peer-list">
+        <div style="color:var(--text-dim);font-size:10px;">No room joined.</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Audio Controls</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="btn" id="mic-btn" onclick="toggleMic()">Enable Microphone</button>
+        <div style="font-size:9px;color:var(--text-dim);line-height:1.6">
+          Enabling the microphone feeds local audio into the phi-harmonic analysis pipeline. WebRTC audio streams are negotiated via the mesh signaling layer.
+        </div>
+        <div id="audio-status" style="font-size:9px;color:var(--text-dim);">Status: inactive</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Diagnostics</div>
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <div style="display:flex;justify-content:space-between;font-size:9px;">
+          <span style="color:var(--text-dim);">MY PEER ID</span>
+          <span id="my-peer-id-diag" style="color:var(--cyan);word-break:break-all;text-align:right;max-width:140px;">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;">
+          <span style="color:var(--text-dim);">CURRENT ROOM</span>
+          <span id="current-room-diag" style="color:var(--text);">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;">
+          <span style="color:var(--text-dim);">SIGNALS SENT</span>
+          <span id="signals-sent-diag" style="color:var(--text);">0</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;">
+          <span style="color:var(--text-dim);">SIGNALS RECV</span>
+          <span id="signals-recv-diag" style="color:var(--text);">0</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;">
+          <span style="color:var(--text-dim);">POLL LATENCY</span>
+          <span id="poll-latency-diag" style="color:var(--text);">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Ecosystem</div>
+      <div style="display:flex;flex-direction:column;gap:4px;font-size:9px;">
+        <a href="https://github.com/ndrorchestration/DGAF-Framework" target="_blank" style="color:var(--amber);text-decoration:none;">DGAF-Framework →</a>
+        <a href="https://github.com/ndrorchestration/Driftwatch" target="_blank" style="color:var(--text-dim);text-decoration:none;">Driftwatch →</a>
+        <a href="https://github.com/ndrorchestration/3d-visualization-hub" target="_blank" style="color:var(--text-dim);text-decoration:none;">3d-visualization-hub →</a>
+        <a href="https://github.com/ndrorchestration/sentinel-governance" target="_blank" style="color:var(--text-dim);text-decoration:none;">sentinel-governance →</a>
+      </div>
+    </div>
+
+  </aside>
+
+</div>
+
+<div class="notif" id="notif"></div>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────────────────
+const PHI = 1.6180339887;
+const myPeerId = generatePeerId();
+let currentRoomId = null;
+let currentRoomName = null;
+let pollInterval = null;
+let heartbeatInterval = null;
+let lastPollTime = null;
+let signalsSent = 0;
+let signalsRecv = 0;
+let signalsPerMin = 0;
+let signalsThisMinute = 0;
+let peerConnections = {};
+let localStream = null;
+let micEnabled = false;
+let rooms = [];
+let peers = [];
+
+// ─── Peer ID ─────────────────────────────────────────────────────────────────
+function generatePeerId() {
+  const hex = Array.from(crypto.getRandomValues(new Uint8Array(8)))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+  return `peer_${hex}`;
+}
+
+document.getElementById('my-peer-id-short').textContent = myPeerId.slice(-8);
+document.getElementById('my-peer-id-diag').textContent = myPeerId;
+
+// ─── Notification ────────────────────────────────────────────────────────────
+let notifTimer = null;
+function showNotif(msg, type = '') {
+  const el = document.getElementById('notif');
+  el.textContent = msg;
+  el.className = `notif show ${type}`;
+  clearTimeout(notifTimer);
+  notifTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ─── Log ─────────────────────────────────────────────────────────────────────
+function log(msg, dir = 'sys') {
+  const feed = document.getElementById('signal-feed');
+  const time = new Date().toLocaleTimeString('en', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  line.innerHTML = `<span class="log-time">${time}</span><span class="log-type ${dir}">${dir.toUpperCase()}</span><span class="log-msg">${escapeHtml(msg)}</span>`;
+  feed.appendChild(line);
+  feed.scrollTop = feed.scrollHeight;
+  if (feed.children.length > 200) feed.removeChild(feed.firstChild);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ─── API Helpers ──────────────────────────────────────────────────────────────
+async function api(path, opts = {}) {
+  const res = await fetch(path, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || res.statusText);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+// ─── Rooms ────────────────────────────────────────────────────────────────────
+async function loadRooms() {
+  try {
+    rooms = await api('/api/rooms');
+    renderRoomList();
+    renderRoomSelect();
+  } catch(e) {
+    log(`Failed to load rooms: ${e.message}`, 'sys');
+  }
+}
+
+function renderRoomList() {
+  const list = document.getElementById('room-list');
+  list.innerHTML = '';
+  if (!rooms.length) {
+    list.innerHTML = '<div style="color:var(--text-dim);font-size:10px;">No rooms yet. Create one.</div>';
+    return;
+  }
+  rooms.forEach(r => {
+    const item = document.createElement('div');
+    item.className = `room-item${currentRoomId === r.id ? ' active' : ''}`;
+    item.innerHTML = `<span class="room-item-name">${escapeHtml(r.name)}</span><span class="room-item-count">${r.peerCount ?? 0}</span>`;
+    item.onclick = () => {
+      document.getElementById('room-select').value = r.id;
+    };
+    list.appendChild(item);
+  });
+}
+
+function renderRoomSelect() {
+  const sel = document.getElementById('room-select');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— select a room —</option>';
+  rooms.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r.id;
+    opt.textContent = r.name;
+    sel.appendChild(opt);
+  });
+  if (prev) sel.value = prev;
+}
+
+async function createRoom() {
+  const input = document.getElementById('room-name-input');
+  const name = input.value.trim();
+  if (!name) return;
+  try {
+    const room = await api('/api/rooms', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    });
+    input.value = '';
+    log(`Room "${room.name}" created`, 'sys');
+    showNotif(`Room "${room.name}" created`, 'ok');
+    await loadRooms();
+  } catch(e) {
+    showNotif(e.message, 'err');
+  }
+}
+
+// ─── Join / Leave ─────────────────────────────────────────────────────────────
+async function joinSelectedRoom() {
+  const sel = document.getElementById('room-select');
+  const roomId = sel.value;
+  if (!roomId) { showNotif('Select a room first', ''); return; }
+
+  const room = rooms.find(r => r.id === roomId);
+  if (!room) { showNotif('Room not found', 'err'); return; }
+
+  if (currentRoomId) await leaveRoom();
+
+  try {
+    await api(`/api/rooms/${roomId}/peers`, {
+      method: 'POST',
+      body: JSON.stringify({ peerId: myPeerId, userAgent: navigator.userAgent }),
+    });
+
+    currentRoomId = roomId;
+    currentRoomName = room.name;
+    document.getElementById('current-room-diag').textContent = room.name;
+    document.getElementById('conn-dot').className = 'status-dot online';
+    document.getElementById('conn-label').textContent = 'CONNECTED';
+    document.getElementById('leave-btn').style.display = '';
+    document.getElementById('empty-state').style.display = 'none';
+
+    log(`Joined room "${room.name}"`, 'sys');
+    showNotif(`Joined "${room.name}"`, 'ok');
+
+    renderRoomList();
+    startPolling();
+    startHeartbeat();
+    loadPeers();
+  } catch(e) {
+    showNotif(e.message, 'err');
+    log(`Join failed: ${e.message}`, 'sys');
+  }
+}
+
+async function leaveRoom() {
+  if (!currentRoomId) return;
+  try {
+    await api(`/api/rooms/${currentRoomId}/peers/${encodeURIComponent(myPeerId)}`, { method: 'DELETE' });
+  } catch(_) {}
+
+  stopPolling();
+  stopHeartbeat();
+
+  const name = currentRoomName;
+  currentRoomId = null;
+  currentRoomName = null;
+
+  document.getElementById('current-room-diag').textContent = '—';
+  document.getElementById('conn-dot').className = 'status-dot';
+  document.getElementById('conn-label').textContent = 'OFFLINE';
+  document.getElementById('leave-btn').style.display = 'none';
+  document.getElementById('empty-state').style.display = '';
+  document.getElementById('peer-list').innerHTML = '<div style="color:var(--text-dim);font-size:10px;">No room joined.</div>';
+  document.getElementById('node-count').textContent = '0';
+  peers = [];
+  meshNodes = [];
+  renderRoomList();
+
+  if (name) {
+    log(`Left room "${name}"`, 'sys');
+    showNotif(`Left "${name}"`, '');
+  }
+}
+
+// ─── Peers ────────────────────────────────────────────────────────────────────
+async function loadPeers() {
+  if (!currentRoomId) return;
+  try {
+    peers = await api(`/api/rooms/${currentRoomId}/peers`);
+    renderPeers();
+    updateMeshNodes();
+    document.getElementById('node-count').textContent = peers.length;
+  } catch(e) { /* noop */ }
+}
+
+function renderPeers() {
+  const list = document.getElementById('peer-list');
+  list.innerHTML = '';
+  if (!peers.length) {
+    list.innerHTML = '<div style="color:var(--text-dim);font-size:10px;">No peers yet.</div>';
+    return;
+  }
+  peers.forEach(p => {
+    const isSelf = p.peerId === myPeerId;
+    const div = document.createElement('div');
+    div.className = `peer-item${isSelf ? ' self' : ''}`;
+    div.innerHTML = `
+      <div class="peer-dot"></div>
+      <span class="peer-name">${escapeHtml(p.peerId.slice(-12))}</span>
+      ${isSelf ? '<span class="peer-self-badge">you</span>' : ''}
+      <span class="peer-time">${timeSince(p.lastSeen)}</span>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function timeSince(ts) {
+  const s = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
+  if (s < 5) return 'now';
+  if (s < 60) return `${s}s`;
+  return `${Math.floor(s/60)}m`;
+}
+
+// ─── Polling ──────────────────────────────────────────────────────────────────
+let lastSignalTime = new Date().toISOString();
+
+function startPolling() {
+  pollInterval = setInterval(async () => {
+    if (!currentRoomId) return;
+    const t0 = Date.now();
+    try {
+      const sigs = await api(
+        `/api/rooms/${currentRoomId}/signals?peerId=${encodeURIComponent(myPeerId)}&since=${encodeURIComponent(lastSignalTime)}`
+      );
+      const latency = Date.now() - t0;
+      document.getElementById('poll-latency-diag').textContent = `${latency}ms`;
+
+      if (sigs && sigs.length > 0) {
+        lastSignalTime = sigs[sigs.length - 1].createdAt;
+        for (const sig of sigs) {
+          signalsRecv++;
+          signalsThisMinute++;
+          document.getElementById('signals-recv-diag').textContent = signalsRecv;
+          log(`${sig.type} from ${sig.fromPeer.slice(-8)}`, 'in');
+          handleInboundSignal(sig);
+        }
+      }
+    } catch(e) { /* noop */ }
+  }, 600);
+}
+
+function stopPolling() {
+  clearInterval(pollInterval);
+  pollInterval = null;
+  lastSignalTime = new Date().toISOString();
+}
+
+// ─── Heartbeat ────────────────────────────────────────────────────────────────
+function startHeartbeat() {
+  heartbeatInterval = setInterval(async () => {
+    if (!currentRoomId) return;
+    try {
+      await api('/api/heartbeat', {
+        method: 'POST',
+        body: JSON.stringify({ roomId: currentRoomId, peerId: myPeerId }),
+      });
+      await loadPeers();
+    } catch(_) {}
+  }, 5000);
+}
+
+function stopHeartbeat() {
+  clearInterval(heartbeatInterval);
+  heartbeatInterval = null;
+}
+
+// ─── WebRTC ───────────────────────────────────────────────────────────────────
+const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
+async function sendSignal(toPeer, type, payload) {
+  if (!currentRoomId) return;
+  try {
+    await api(`/api/rooms/${currentRoomId}/signals`, {
+      method: 'POST',
+      body: JSON.stringify({ fromPeer: myPeerId, toPeer, type, payload }),
+    });
+    signalsSent++;
+    signalsThisMinute++;
+    document.getElementById('signals-sent-diag').textContent = signalsSent;
+    log(`${type} → ${toPeer ? toPeer.slice(-8) : 'all'}`, 'out');
+  } catch(e) {
+    log(`Signal error: ${e.message}`, 'sys');
+  }
+}
+
+function handleInboundSignal(sig) {
+  const { fromPeer, type, payload } = sig;
+  if (type === 'offer') handleOffer(fromPeer, payload);
+  else if (type === 'answer') handleAnswer(fromPeer, payload);
+  else if (type === 'ice') handleIce(fromPeer, payload);
+  else if (type === 'join-announce') initiateConnection(fromPeer);
+}
+
+async function initiateConnection(remotePeer) {
+  if (peerConnections[remotePeer] || remotePeer === myPeerId) return;
+  const pc = createPeerConnection(remotePeer);
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  await sendSignal(remotePeer, 'offer', offer);
+}
+
+async function handleOffer(fromPeer, offer) {
+  if (!peerConnections[fromPeer]) createPeerConnection(fromPeer);
+  const pc = peerConnections[fromPeer];
+  await pc.setRemoteDescription(new RTCSessionDescription(offer));
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+  await sendSignal(fromPeer, 'answer', answer);
+}
+
+async function handleAnswer(fromPeer, answer) {
+  const pc = peerConnections[fromPeer];
+  if (pc) await pc.setRemoteDescription(new RTCSessionDescription(answer));
+}
+
+async function handleIce(fromPeer, candidate) {
+  const pc = peerConnections[fromPeer];
+  if (pc && candidate) await pc.addIceCandidate(new RTCIceCandidate(candidate));
+}
+
+function createPeerConnection(remotePeer) {
+  const pc = new RTCPeerConnection(rtcConfig);
+  peerConnections[remotePeer] = pc;
+
+  pc.onicecandidate = (e) => {
+    if (e.candidate) sendSignal(remotePeer, 'ice', e.candidate);
+  };
+
+  pc.onconnectionstatechange = () => {
+    log(`${remotePeer.slice(-8)}: ${pc.connectionState}`, 'sys');
+  };
+
+  if (localStream) {
+    localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+  }
+
+  return pc;
+}
+
+// ─── Mic ──────────────────────────────────────────────────────────────────────
+async function toggleMic() {
+  const btn = document.getElementById('mic-btn');
+  const status = document.getElementById('audio-status');
+  if (!micEnabled) {
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      micEnabled = true;
+      btn.textContent = 'Disable Microphone';
+      status.style.color = 'var(--green)';
+      status.textContent = 'Status: active — capturing audio';
+      log('Microphone enabled', 'sys');
+      analyzeAudio(localStream);
+      if (currentRoomId) await sendSignal(null, 'join-announce', { peerId: myPeerId });
+    } catch(e) {
+      showNotif('Mic access denied', 'err');
+      status.textContent = `Status: error — ${e.message}`;
+    }
+  } else {
+    if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+    micEnabled = false;
+    btn.textContent = 'Enable Microphone';
+    status.style.color = 'var(--text-dim)';
+    status.textContent = 'Status: inactive';
+    log('Microphone disabled', 'sys');
+    stopAudioAnalysis();
+  }
+}
+
+// ─── Audio Analysis (phi-harmonic) ───────────────────────────────────────────
+let audioCtx = null, analyser = null, animFrame = null;
+
+function analyzeAudio(stream) {
+  audioCtx = new AudioContext();
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 2048;
+  const src = audioCtx.createMediaStreamSource(stream);
+  src.connect(analyser);
+}
+
+function stopAudioAnalysis() {
+  if (audioCtx) { audioCtx.close(); audioCtx = null; analyser = null; }
+}
+
+// ─── Waveform Canvas ─────────────────────────────────────────────────────────
+const wCanvas = document.getElementById('waveform-canvas');
+const wCtx = wCanvas.getContext('2d');
+let wPhase = 0;
+
+function resizeWaveform() {
+  wCanvas.width = wCanvas.offsetWidth;
+  wCanvas.height = wCanvas.offsetHeight;
+}
+
+function drawWaveform() {
+  requestAnimationFrame(drawWaveform);
+  resizeWaveform();
+  const W = wCanvas.width, H = wCanvas.height;
+  wCtx.clearRect(0, 0, W, H);
+
+  // Background grid
+  wCtx.strokeStyle = 'rgba(39,43,49,0.8)';
+  wCtx.lineWidth = 1;
+  for (let x = 0; x < W; x += 40) {
+    wCtx.beginPath(); wCtx.moveTo(x, 0); wCtx.lineTo(x, H); wCtx.stroke();
+  }
+  wCtx.beginPath(); wCtx.moveTo(0, H/2); wCtx.lineTo(W, H/2); wCtx.stroke();
+
+  const data = new Float32Array(analyser ? analyser.frequencyBinCount : 512);
+  if (analyser) analyser.getFloatTimeDomainData(data);
+
+  // Draw phi-harmonic waveform (live if mic, synthetic otherwise)
+  wPhase += 0.022;
+  const N = analyser ? data.length : 512;
+
+  wCtx.beginPath();
+  wCtx.strokeStyle = 'rgba(0, 212, 184, 0.9)';
+  wCtx.lineWidth = 1.5;
+  wCtx.shadowColor = 'rgba(0, 212, 184, 0.4)';
+  wCtx.shadowBlur = 6;
+
+  for (let i = 0; i < N; i++) {
+    const x = (i / N) * W;
+    let y;
+    if (analyser) {
+      y = H/2 + data[i] * H * 0.45;
+    } else {
+      const t = (i / N) * Math.PI * 2;
+      y = H/2
+        + Math.sin(t * PHI + wPhase) * H * 0.15
+        + Math.sin(t * PHI * 2 - wPhase * 1.3) * H * 0.07
+        + Math.sin(t * PHI * 3 + wPhase * 0.7) * H * 0.04;
+    }
+    i === 0 ? wCtx.moveTo(x, y) : wCtx.lineTo(x, y);
+  }
+  wCtx.stroke();
+  wCtx.shadowBlur = 0;
+
+  // Second harmonic
+  wCtx.beginPath();
+  wCtx.strokeStyle = 'rgba(232, 160, 32, 0.35)';
+  wCtx.lineWidth = 1;
+  for (let i = 0; i < N; i++) {
+    const x = (i / N) * W;
+    const t = (i / N) * Math.PI * 2;
+    const y = H/2 + Math.sin(t * PHI * PHI + wPhase * PHI) * H * 0.06;
+    i === 0 ? wCtx.moveTo(x, y) : wCtx.lineTo(x, y);
+  }
+  wCtx.stroke();
+
+  // Phi value oscillation display
+  const phiDisp = (PHI + Math.sin(wPhase * 0.3) * 0.001).toFixed(6);
+  document.getElementById('phi-label').textContent = `φ = ${phiDisp}`;
+}
+
+drawWaveform();
+
+// ─── Mesh Canvas ──────────────────────────────────────────────────────────────
+const mCanvas = document.getElementById('mesh-canvas');
+const mCtx = mCanvas.getContext('2d');
+let meshNodes = [];
+let meshAnimPhase = 0;
+
+function resizeMesh() {
+  mCanvas.width = mCanvas.offsetWidth;
+  mCanvas.height = mCanvas.offsetHeight;
+}
+
+function updateMeshNodes() {
+  const W = mCanvas.width || 400, H = mCanvas.height || 300;
+  const cx = W / 2, cy = H / 2;
+  meshNodes = peers.map((p, i) => {
+    const existing = meshNodes.find(n => n.id === p.peerId);
+    if (existing) return { ...existing, self: p.peerId === myPeerId };
+
+    const angle = (i / Math.max(peers.length, 1)) * Math.PI * 2;
+    const r = Math.min(W, H) * 0.32;
+    return {
+      id: p.peerId,
+      x: cx + Math.cos(angle) * r + (Math.random() - 0.5) * 20,
+      y: cy + Math.sin(angle) * r + (Math.random() - 0.5) * 20,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      self: p.peerId === myPeerId,
+    };
+  });
+  document.getElementById('mesh-count').textContent = `${meshNodes.length} node${meshNodes.length !== 1 ? 's' : ''}`;
+}
+
+function drawMesh() {
+  requestAnimationFrame(drawMesh);
+  resizeMesh();
+  const W = mCanvas.width, H = mCanvas.height;
+  mCtx.clearRect(0, 0, W, H);
+
+  if (!meshNodes.length) return;
+
+  meshAnimPhase += 0.008;
+
+  // Update node positions (gentle drift)
+  meshNodes.forEach(n => {
+    n.x += n.vx;
+    n.y += n.vy;
+    if (n.x < 40 || n.x > W - 40) n.vx *= -1;
+    if (n.y < 40 || n.y > H - 40) n.vy *= -1;
+  });
+
+  // Draw edges
+  for (let i = 0; i < meshNodes.length; i++) {
+    for (let j = i + 1; j < meshNodes.length; j++) {
+      const a = meshNodes[i], b = meshNodes[j];
+      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      const maxDist = Math.min(W, H) * 0.7;
+      if (dist > maxDist) continue;
+
+      const alpha = (1 - dist / maxDist) * 0.35;
+      const pulse = 0.5 + 0.5 * Math.sin(meshAnimPhase * PHI + i * PHI);
+
+      mCtx.beginPath();
+      mCtx.strokeStyle = `rgba(0, 212, 184, ${alpha * pulse})`;
+      mCtx.lineWidth = 0.8;
+      mCtx.setLineDash([4, 6]);
+      mCtx.moveTo(a.x, a.y);
+      mCtx.lineTo(b.x, b.y);
+      mCtx.stroke();
+      mCtx.setLineDash([]);
+
+      // Data packet animation along edge
+      if (Math.random() < 0.003) {
+        const t = (meshAnimPhase * 2) % 1;
+        const px = a.x + (b.x - a.x) * t;
+        const py = a.y + (b.y - a.y) * t;
+        mCtx.beginPath();
+        mCtx.arc(px, py, 2, 0, Math.PI * 2);
+        mCtx.fillStyle = 'rgba(232, 160, 32, 0.9)';
+        mCtx.fill();
+      }
+    }
+  }
+
+  // Draw nodes
+  meshNodes.forEach((n, i) => {
+    const pulse = 0.7 + 0.3 * Math.sin(meshAnimPhase * 1.5 + i);
+
+    // Outer ring
+    mCtx.beginPath();
+    mCtx.arc(n.x, n.y, 14 * pulse, 0, Math.PI * 2);
+    mCtx.strokeStyle = n.self
+      ? `rgba(232, 160, 32, ${0.3 * pulse})`
+      : `rgba(0, 212, 184, ${0.2 * pulse})`;
+    mCtx.lineWidth = 1;
+    mCtx.stroke();
+
+    // Core
+    mCtx.beginPath();
+    mCtx.arc(n.x, n.y, 5, 0, Math.PI * 2);
+    mCtx.fillStyle = n.self ? 'var(--amber)' : 'var(--cyan)';
+    mCtx.shadowColor = n.self ? 'var(--amber)' : 'var(--cyan)';
+    mCtx.shadowBlur = 10;
+    mCtx.fill();
+    mCtx.shadowBlur = 0;
+
+    // Label
+    mCtx.fillStyle = 'rgba(200, 205, 212, 0.7)';
+    mCtx.font = '9px Space Mono, monospace';
+    mCtx.textAlign = 'center';
+    mCtx.fillText(n.id.slice(-6), n.x, n.y + 22);
+  });
+}
+
+drawMesh();
+
+// ─── Phi meters simulation ─────────────────────────────────────────────────────
+setInterval(() => {
+  const drift = (Math.random() * 0.3).toFixed(2);
+  document.getElementById('drift-val').textContent = `${drift} Hz`;
+  const headroom = (14 + Math.random() * 2).toFixed(1);
+  document.getElementById('headroom-val').textContent = `${headroom}%`;
+  document.getElementById('headroom-fill').style.width = `${100 - parseFloat(headroom)}%`;
+
+  const rate = signalsThisMinute;
+  signalsThisMinute = 0;
+  signalsPerMin = Math.round(signalsPerMin * 0.7 + rate * 0.3);
+  document.getElementById('signal-rate').textContent = signalsPerMin;
+}, 3000);
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+(async () => {
+  log('Acoustic-Mesh node initialized', 'sys');
+  log(`Peer ID: ${myPeerId}`, 'sys');
+  log(`Phi constant: φ = ${PHI}`, 'sys');
+  await loadRooms();
+  setInterval(loadRooms, 10000);
+})();
+
+// Keyboard: Enter to create room
+document.getElementById('room-name-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') createRoom();
+});
+</script>
+
+</body>
+</html>
