@@ -1,7 +1,7 @@
 # Acoustic-Mesh
 
 ![Status](https://img.shields.io/badge/Status-Active-green?style=flat-square)
-![License](https://img.shields.io/badge/License-Apache%202.0-01696f?style=flat-square)
+![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
 ![Language](https://img.shields.io/badge/Language-JavaScript-yellow?style=flat-square)
 
 > **Project boundary:** Acoustic-Mesh is an acoustic/WebRTC engineering project. It is a separate implementation track from DGAF governance and PDMAL lattice research. Shared ecosystem terminology does not imply implementation equivalence.
@@ -52,6 +52,10 @@ Acoustic-Mesh may integrate with the broader ndrorchestration ecosystem, includi
 ## Status
 
 **Active / experimental.** Repository-level claims should be supported by current code, tests, benchmarks, or documented experiments. Historical design claims remain historical unless independently re-established.
+
+## Licensing
+
+Package metadata declares the project as MIT-licensed. A repository `LICENSE` file should be added if the MIT license is intended to be formally distributed with the repository.
 
 ## Provenance
 
