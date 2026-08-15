@@ -1,15 +1,27 @@
-# Release and Evidence Policy
+# Acoustic-Mesh Release and Evidence Policy
 
-## Current posture
+## Current software version
 
-Acoustic-mesh is an experimental acoustic/network engineering system. Current software and network implementation should be distinguished from claims about acoustic sensing, localization, physical performance, or sensor accuracy.
+`1.0.0` is retained as the repository's existing software release/version label. It describes the software artifact and its compatibility/versioning history; it must **not** be interpreted as evidence that acoustic, spatial, sensor, WebRTC, or mathematical research claims are validated.
 
-## Versioning
+Because the repository remains explicitly experimental, a future versioning reassessment may be warranted if public documentation or compatibility expectations imply production maturity. That reassessment must preserve historical version provenance rather than silently rewriting it.
 
-Use `0.x.y` while protocol and experimental behavior remain unstable. Promote to `1.0.0` only after a stable interface, reproducible deployment, compatibility expectations, and measured core behavior are established.
+## Evidence ladder
 
-## Evidence rule
+`DESCRIBED → IMPLEMENTED → BUILD/CI VERIFIED → FUNCTIONALLY TESTED → BENCHMARKED → EMPIRICALLY REPLICATED`
 
-Software CI can establish software correctness for tested cases. It does not establish physical/acoustic validity.
+Different components may occupy different evidence states.
 
-Physical claims require dated experiment artifacts covering the relevant equipment/configuration, environment, procedure, measurements, uncertainty/limitations, and reproducibility.
+## Acoustic claim gate
+
+Claims about acoustic localization, spatial reconstruction, modal analysis, sensor fusion, frequency response, latency, noise robustness, or WebRTC performance require measurements appropriate to the claim. Source code, successful builds, and deployment status do not substitute for physical/acoustic evidence.
+
+Historical or target-state terminology—including harmonic, phi-related, headroom, and frequency-threshold language—must remain qualified unless reproducible implementation or measurement evidence supports the specific claim.
+
+## Architecture boundary
+
+Acoustic-Mesh is the acoustic/WebRTC engineering track. DGAF, PDMAL/Phi-Calculus, Driftwatch, ACP, and related projects may integrate with it, but their existence or claims do not validate Acoustic-Mesh's physical performance.
+
+## Release rule
+
+A future major release should require stable interfaces plus evidence appropriate to every capability presented as stable. A version number alone never establishes scientific validity or production readiness.
