@@ -2,7 +2,7 @@
   "name": "acoustic-mesh",
   "version": "1.0.0",
   "private": false,
-  "description": "Production-grade WebRTC multi-device acoustic mesh with WebSocket signaling, sensor pipelines, and phi-harmonic modal analysis",
+  "description": "Experimental WebRTC multi-device acoustic mesh with WebSocket signaling, sensor pipelines, and acoustic/spatial analysis infrastructure",
   "workspaces": [
     "apps/*",
     "services/*",
@@ -33,7 +33,8 @@
     "acoustic",
     "mesh-network",
     "signaling",
-    "phi-harmonic"
+    "signal-processing",
+    "spatial-audio"
   ],
   "author": "Ndr \"Ender\" Hensel <https://github.com/Flickerflash>",
   "license": "MIT",
