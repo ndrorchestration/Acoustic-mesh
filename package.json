@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "dev": "concurrently \"node services/signaling/index.js\" \"npm run dev --workspace apps/web\"",
-    "build": "npm run build --workspaces",
+    "build": "tsc --noEmit",
     "start": "node services/signaling/index.js"
   },
   "engines": {
