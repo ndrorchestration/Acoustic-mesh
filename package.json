@@ -3,22 +3,38 @@
   "version": "1.0.0",
   "private": false,
   "description": "Production-grade WebRTC multi-device acoustic mesh with WebSocket signaling, sensor pipelines, and phi-harmonic modal analysis",
-  "workspaces": ["apps/*", "services/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "concurrently \"node services/signaling/index.js\" \"npm run dev --workspace apps/web\"",
-    "build": "npm run build --workspaces",
+    "build": "tsc --noEmit",
     "start": "node services/signaling/index.js"
   },
   "engines": {
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "@netlify/database": "^1.0.0",
+    "@netlify/functions": "^5.3.0",
+    "drizzle-orm": "^1.0.0-beta.22",
     "ws": "^8.18.0"
   },
   "devDependencies": {
-    "concurrently": "^8.0.0"
+    "concurrently": "^8.0.0",
+    "drizzle-kit": "^1.0.0-beta.22",
+    "typescript": "^6.0.3"
   },
-  "keywords": ["webrtc", "websocket", "acoustic", "mesh-network", "signaling", "phi-harmonic"],
+  "keywords": [
+    "webrtc",
+    "websocket",
+    "acoustic",
+    "mesh-network",
+    "signaling",
+    "phi-harmonic"
+  ],
   "author": "Ndr \"Ender\" Hensel <https://github.com/Flickerflash>",
   "license": "MIT",
   "repository": {
