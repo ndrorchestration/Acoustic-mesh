@@ -55,7 +55,7 @@ Acoustic-Mesh may integrate with the broader ndrorchestration ecosystem, includi
 
 ## Licensing
 
-Package metadata declares the project as MIT-licensed. A repository `LICENSE` file should be added if the MIT license is intended to be formally distributed with the repository.
+MIT License. See `LICENSE` for the full license text.
 
 ## Provenance
 
