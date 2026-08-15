@@ -3,24 +3,24 @@
 | Dimension | Status | Evidence / gate |
 |---|---|---|
 | Repository identity | VERIFIED | `Acoustic-mesh` |
-| Project boundary | VERIFIED | README |
-| Software version | VERIFIED | existing `1.0.0` retained with qualification |
-| Release/evidence policy | VERIFIED | this repository policy |
-| WebRTC/network implementation | IMPLEMENTED where present | source tree |
-| Acoustic/signal-processing implementation | IMPLEMENTATION STATUS REQUIRES COMPONENT-LEVEL AUDIT | source/tests |
-| Software CI | VERIFIED where current workflow passes | `.github/workflows/ci.yml` |
-| Acoustic localization accuracy | PENDING | physical benchmark required |
-| Spatial reconstruction accuracy | PENDING | physical benchmark required |
-| Sensor-fusion accuracy | PENDING | sensor experiment required |
-| Frequency/noise/latency performance | PENDING | measured experiment required |
-| WebRTC mesh performance | PENDING | network benchmark required |
-| Mathematical/Phi superiority claims | NOT ESTABLISHED | separate mathematical evidence required |
-| Governance effectiveness | NOT APPLICABLE | separate governance repositories |
-| Production readiness | NOT CLAIMED | operational/security/reliability evidence required |
+| Project boundary | VERIFIED | README / governance docs |
+| Historical version `1.0.0` | VERIFIED | package/changelog provenance |
+| Release/evidence policy | VERIFIED | `docs/RELEASE_AND_EVIDENCE_POLICY.md` |
+| Component evidence matrix | VERIFIED | `docs/COMPONENT_EVIDENCE_MATRIX.md` |
+| Web application/UI | IMPLEMENTED | source/configuration |
+| WebRTC implementation | PENDING COMPONENT AUDIT | repository references exist; implementation claim requires direct code-path evidence |
+| DSP/acoustic processing | PENDING COMPONENT AUDIT | source-level implementation mapping required |
+| Frequency-analysis implementation | PENDING COMPONENT AUDIT | executable implementation + test vectors required |
+| Acoustic localization | PENDING EMPIRICAL EVIDENCE | ground-truth benchmark required |
+| Sensor fusion | PENDING EMPIRICAL EVIDENCE | synchronized sensor dataset + metrics required |
+| Noise robustness | PENDING EMPIRICAL EVIDENCE | controlled SNR benchmark required |
+| Latency | PENDING EMPIRICAL EVIDENCE | timing measurements required |
+| Cross-device mesh performance | PENDING EMPIRICAL EVIDENCE | multi-device test required |
+| Phi/mathematical claims | NOT ESTABLISHED HERE | separate research evidence required |
+| Governance effectiveness | NOT APPLICABLE | not the repository's primary evidence domain |
+| Production readiness | NOT CLAIMED | separate operational/security/reliability gate |
 | Notion synchronization | PENDING | ecosystem registry reconciliation |
 
 ## Closure rule
 
-Acoustic-Mesh is documentation/versioning-closed only when its descriptive claims are aligned with the evidence ladder. The engineering repository remains experimentally open until physical/network benchmark artifacts establish the corresponding performance claims.
-
-A successful software build or CI run must never be promoted into evidence of physical acoustic performance.
+Documentation and versioning can be closed independently of physical-performance validation. No acoustic or sensor claim is promoted solely because software infrastructure exists.
