@@ -22,10 +22,16 @@
 <body>
 <main>
   <h1>Acoustic Lab</h1>
-  <p>Minimal browser laboratory for observing microphone signals in time and frequency domains.</p>
+  <p>Minimal browser laboratory for observing signals in time and frequency domains and validating the FFT readout with a known internal tone.</p>
 
   <div class="controls">
-    <button id="start">Start microphone</button>
+    <label>Source
+      <select id="sourceMode"><option value="mic" selected>Microphone</option><option value="tone">Internal test tone</option></select>
+    </label>
+    <label>Tone frequency
+      <select id="toneFrequency"><option>100</option><option selected>440</option><option>1000</option><option>5000</option></select> Hz
+    </label>
+    <button id="start">Start</button>
     <button id="stop" disabled>Stop</button>
     <button id="freeze" disabled>Freeze</button>
     <label>FFT size
@@ -41,23 +47,26 @@
     <div class="readout">RMS amplitude<br><strong id="rms">—</strong></div>
     <div class="readout">Sampling rate<br><strong id="rate">—</strong> Hz</div>
     <div class="readout">FFT bins<br><strong id="bins">—</strong></div>
+    <div class="readout" id="validationReadout" hidden>Ground truth<br><strong id="truth">—</strong> Hz<br>Measured <strong id="measured">—</strong> Hz<br>Error <strong id="error">—</strong> Hz</div>
   </div>
 
   <h2>Waveform</h2>
   <canvas id="wave" width="1000" height="220"></canvas>
   <h2>Spectrum</h2>
   <canvas id="spectrum" width="1000" height="220"></canvas>
-  <p class="status" id="status">Microphone is stopped.</p>
-  <small>Measurements are diagnostic and device-dependent; this MVP is not a calibrated sound-level meter.</small>
+  <p class="status" id="status">Source is stopped.</p>
+  <small>Measurements are diagnostic and device-dependent; this MVP is not a calibrated sound-level meter. Tone mode is an algorithmic FFT validation aid, not a hardware calibration.</small>
 </main>
 <script>
 'use strict';
-let audioContext, stream, source, analyser, waveData, freqData, animationId, frozen = false;
+let audioContext, stream, source, analyser, oscillator, animationId, frozen = false;
+let waveData, freqData;
 const $ = id => document.getElementById(id);
 const wave = $('wave'), spectrum = $('spectrum');
 const wc = wave.getContext('2d'), sc = spectrum.getContext('2d');
 
 function setStatus(text) { $('status').textContent = text; }
+function currentTone() { return Number($('toneFrequency').value); }
 function configureAnalyser() {
   if (!analyser) return;
   analyser.fftSize = Number($('fftSize').value);
@@ -69,26 +78,46 @@ function configureAnalyser() {
 
 async function start() {
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    source = audioContext.createMediaStreamSource(stream);
     analyser = audioContext.createAnalyser();
-    source.connect(analyser);
     configureAnalyser();
     $('rate').textContent = audioContext.sampleRate;
+
+    if ($('sourceMode').value === 'tone') {
+      oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      oscillator.type = 'sine';
+      oscillator.frequency.value = currentTone();
+      gain.gain.value = 0.2;
+      oscillator.connect(gain).connect(analyser);
+      oscillator.start();
+      $('validationReadout').hidden = false;
+      $('truth').textContent = currentTone();
+      setStatus('Internal test tone active. This bypasses the microphone and validates the FFT/readout path.');
+    } else {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      source = audioContext.createMediaStreamSource(stream);
+      source.connect(analyser);
+      $('validationReadout').hidden = true;
+      setStatus('Microphone active.');
+    }
     $('start').disabled = true; $('stop').disabled = false; $('freeze').disabled = false;
-    frozen = false; setStatus('Microphone active.'); draw();
+    frozen = false; $('freeze').textContent = 'Freeze'; draw();
   } catch (error) {
-    setStatus('Microphone unavailable: ' + error.message);
+    setStatus('Source unavailable: ' + error.message);
+    if (audioContext) await audioContext.close();
+    audioContext = analyser = source = oscillator = null;
   }
 }
 function stop() {
   cancelAnimationFrame(animationId);
   if (stream) stream.getTracks().forEach(track => track.stop());
+  if (oscillator) { try { oscillator.stop(); } catch (_) {} }
   if (audioContext) audioContext.close();
-  stream = source = analyser = null;
+  stream = source = analyser = oscillator = audioContext = null;
   $('start').disabled = false; $('stop').disabled = true; $('freeze').disabled = true;
-  setStatus('Microphone is stopped.');
+  $('validationReadout').hidden = true;
+  setStatus('Source is stopped.');
 }
 function estimatePeak() {
   let best = -Infinity, index = 0;
@@ -114,12 +143,21 @@ function draw() {
   sc.beginPath();
   for(let i=0;i<usable;i++) { const db=Math.max(minDb,Math.min(maxDb,freqData[i])); const x=i/(usable-1)*spectrum.width; const y=(1-(db-minDb)/(maxDb-minDb))*spectrum.height; i?sc.lineTo(x,y):sc.moveTo(x,y); }
   sc.stroke();
-  $('peak').textContent=estimatePeak().toFixed(1); $('rms').textContent=rms().toFixed(4);
+  const measured = estimatePeak();
+  $('peak').textContent=measured.toFixed(1); $('rms').textContent=rms().toFixed(4);
+  if (!$('validationReadout').hidden) {
+    const truth = currentTone();
+    $('truth').textContent = truth;
+    $('measured').textContent = measured.toFixed(1);
+    $('error').textContent = (measured-truth).toFixed(1);
+  }
   animationId=requestAnimationFrame(draw);
 }
 $('start').onclick=start; $('stop').onclick=stop;
 $('freeze').onclick=()=>{ frozen=!frozen; $('freeze').textContent=frozen?'Resume':'Freeze'; if(!frozen) draw(); };
 $('fftSize').onchange=configureAnalyser; $('smoothing').oninput=configureAnalyser;
+$('sourceMode').onchange=()=>{ $('validationReadout').hidden=$('sourceMode').value!=='tone'; };
+$('toneFrequency').onchange=()=>{ if (oscillator) oscillator.frequency.value=currentTone(); };
 </script>
 </body>
 </html>
