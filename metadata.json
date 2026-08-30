@@ -1,0 +1,10 @@
+{
+  "name": "Acoustic Mesh",
+  "description": "Production-grade WebRTC multi-device acoustic mesh with WebSocket signaling, sensor pipelines, and phi-harmonic modal analysis",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

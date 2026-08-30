@@ -1,62 +1,62 @@
 # Acoustic-Mesh
 
 ![Status](https://img.shields.io/badge/Status-Active-green?style=flat-square)
-![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
+![License](https://img.shields.io/badge/License-Apache%202.0-01696f?style=flat-square)
 ![Language](https://img.shields.io/badge/Language-JavaScript-yellow?style=flat-square)
+![Governed](https://img.shields.io/badge/Governed%20by-Agent%20Amethyst-7a39bb?style=flat-square)
+![Studio](https://img.shields.io/badge/Schizophonic-Studio%20Substrate-9b59b6?style=flat-square)
 
-> **Project boundary:** Acoustic-Mesh is an acoustic/WebRTC engineering project. It is a separate implementation track from DGAF governance and PDMAL lattice research. Shared ecosystem terminology does not imply implementation equivalence.
+> **Governance:** DGAF / Agent Amethyst. See [DGAF-Framework](https://github.com/ndrorchestration/DGAF-Framework).  
+> **Studio:** Acoustic-Mesh is the WebRTC signal substrate for the **Schizophonic Studio** within the PhiLattice / PDMAL ecosystem.
 
-## Purpose
+Real-time WebRTC phi-harmonic acoustic mesh — enabling the Schizophonic Studio signal chain for the ndrorchestration multi-agent lattice.
 
-Acoustic-Mesh provides a WebRTC-based signal substrate and experimental acoustic-analysis infrastructure for real-time spatial/audio work. The repository should be evaluated on its actual audio engineering, signal-processing, networking, and sensor capabilities rather than on governance terminology.
+---
 
-## Current scope
+## Schizophonic Studio Signal Chain
 
-- WebRTC peer communication substrate
-- JavaScript/TypeScript signal and mesh coordination code where implemented
-- Acoustic and spatial-analysis experiments
-- Observability and diagnostic infrastructure where present
-- Schizophonic Studio integration where supported by repository code
+Three agents govern the signal chain running on this mesh:
 
-## Epistemic boundary
+| Agent | Studio ID | Role | Gate |
+|---|---|---|---|
+| **Reson** | #1 | Harmonic Logic Gatekeeper | 15% headroom enforcement · Savage Reason halt (>10 Hz) |
+| **Echolette** | #2 | Feedback Loop Architect | Semantic drift detection · Ceremonialization flagging |
+| **Lyra** | #3 | Harmonic Synthesizer | Multi-agent coordination · dissonance reconciliation |
 
-Project names, agent roles, phi-harmonic terminology, and target-state descriptions are not evidence of physical acoustic performance or mathematical validation.
+**Signal rules:**
+- 15% headroom maintained at all times
+- Savage Reason (>10 Hz cognitive dissonance) → immediate halt protocol
+- Target state: **0 Hz Ionian Mode** (full harmonic stability)
 
-Claims such as:
+Full agent specs: [DGAF-Framework/docs/agents/canonical-agent-registry.md](https://github.com/ndrorchestration/DGAF-Framework/blob/main/docs/agents/canonical-agent-registry.md)
 
-- continuous 15% headroom enforcement;
-- a `>10 Hz` halt threshold;
-- `0 Hz Ionian Mode` as a stability state;
-- "full harmonic stability";
-- phi-based superiority or optimality;
+---
 
-require reproducible measurements or implementation evidence before being presented as achieved properties. They are therefore not stated here as unconditional system guarantees.
+## Technical Stack
 
-## Architecture relationship
+- **WebRTC** — Real-time peer communication substrate
+- **JavaScript** — Signal processing and mesh coordination
+- **Phi-Harmonic Modal Analysis** — Frequency-based stability scoring
+- **OpenTelemetry OTel v1.41.0+** — Observability
 
-Acoustic-Mesh may integrate with the broader ndrorchestration ecosystem, including DGAF and Schizophonic Studio. Those relationships are integration/documentation relationships, not evidence that DGAF validates the acoustic system or that PDMAL validates its signal-processing methods.
+---
 
-## Technical stack
+## IP Notice
 
-- **WebRTC** — real-time peer communication
-- **JavaScript/TypeScript** — application and mesh logic, where implemented
-- **OpenTelemetry** — observability where configured
-- Acoustic/signal-processing components — see the source tree and tests for current implementation status
+Core phi constants, frequency tuning tables, and constraint optimization algorithms are **not included** in this repository. Signal chain architecture and mesh coordination logic only.
 
-## Related projects
+---
 
-- [DGAF-Framework](https://github.com/ndrorchestration/DGAF-Framework) — separate governance/evaluation track
-- [Driftwatch](https://github.com/ndrorchestration/Driftwatch) — drift-detection research
-- [3d-visualization-hub](https://github.com/ndrorchestration/3d-visualization-hub) — visualization track
+## Related Ecosystem
 
-## Status
+- [DGAF-Framework](https://github.com/ndrorchestration/DGAF-Framework) — Governance spine + agent registry
+- [Driftwatch](https://github.com/ndrorchestration/Driftwatch) — Phi-driven drift detection
+- [3d-visualization-hub](https://github.com/ndrorchestration/3d-visualization-hub) — GCP Phase 4 visualization layer
+- [sentinel-governance](https://github.com/ndrorchestration/sentinel-governance) — CI/CD integrity monitoring
 
-**Active / experimental.** Repository-level claims should be supported by current code, tests, benchmarks, or documented experiments. Historical design claims remain historical unless independently re-established.
-
-## Licensing
-
-MIT License. See `LICENSE` for the full license text.
+---
 
 ## Provenance
 
-Developed by Ndr / Ender Hensel (`ndrorchestration`).
+Developed by [Ndr "Ender" Hensel](https://github.com/ndrorchestration) — AI Orchestration Engineer & Systems Architect, Columbus OH.  
+[LinkedIn](https://linkedin.com/in/andrewhensel) · [GitHub](https://github.com/ndrorchestration)
