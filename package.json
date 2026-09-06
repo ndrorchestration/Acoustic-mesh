@@ -2,10 +2,11 @@
   "name": "acoustic-mesh",
   "version": "1.0.0",
   "private": false,
-  "description": "Production-grade WebRTC multi-device acoustic mesh with WebSocket signaling, sensor pipelines, and phi-harmonic modal analysis",
+  "description": "Experimental TypeScript acoustic-mesh and signaling workspace with browser audio visualization and project-local heuristic telemetry.",
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
+    "typecheck": "tsc --noEmit",
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "start": "node dist/server.cjs"
   },
@@ -37,11 +38,10 @@
     "typescript": "^7.0.2",
     "vite": "^8.1.5"
   },
-  "keywords": ["webrtc", "websocket", "acoustic", "mesh-network", "signaling", "phi-harmonic"],
-  "author": "Ndr \"Ender\" Hensel <https://github.com/Flickerflash>",
-  "license": "MIT",
+  "keywords": ["audio", "websocket", "acoustic", "mesh-network", "signaling", "visualization"],
+  "author": "Ndr / Ender Hensel <https://github.com/ndrorchestration>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Flickerflash/Acoustic-mesh.git"
+    "url": "https://github.com/ndrorchestration/Acoustic-mesh.git"
   }
 }
