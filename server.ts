@@ -4,6 +4,14 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { attachSignaling } from "./services/signaling/index.ts";
 
+const HEURISTIC_BOUNDARY = {
+  evidenceClass: "PROJECT_LOCAL_HEURISTIC",
+  scientificCalibration: false,
+  physicalValidation: false,
+  governanceAuthority: false,
+  note: "Values and persona labels exposed by these routes are experimental UI/simulation constructs, not validated acoustic, cognitive, or governance measurements."
+};
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -13,17 +21,19 @@ async function startServer() {
 
   const server = http.createServer(app);
 
-  // Attach WebSocket signaling to HTTP server
+  // WebSocket room/signaling transport. This verifies transport behavior only;
+  // it does not establish physical acoustic performance.
   const activeRooms = new Map();
   const { rooms } = attachSignaling(server, activeRooms);
 
-  // API Routes
   app.get("/api/health", (req, res) => {
     res.json({
       status: "ok",
+      service: "acoustic-mesh-experimental",
       serverTime: new Date().toISOString(),
       activeRooms: rooms.size,
-      uptime: process.uptime()
+      uptime: process.uptime(),
+      evidenceBoundary: "runtime-health-only"
     });
   });
 
@@ -37,59 +47,63 @@ async function startServer() {
 
   app.get("/api/agents", (req, res) => {
     res.json({
-      studio: "Schizophonic Studio Substrate",
-      ecosystem: "PhiLattice / PDMAL",
-      governance: "DGAF / Agent Amethyst",
+      classification: HEURISTIC_BOUNDARY,
+      studioLabel: "Schizophonic Studio (historical/project vocabulary)",
+      ecosystemReferences: ["DGAF", "PDMAL"],
       agents: [
         {
           id: 1,
           name: "Reson",
-          role: "Harmonic Logic Gatekeeper",
-          gate: "15% headroom enforcement · Savage Reason halt (>10 Hz)",
+          role: "Project-local threshold persona",
+          gate: "Simulation rule: flag headroom below 15%; flag dissonance input above 10 Hz",
           status: "ACTIVE",
           color: "emerald"
         },
         {
           id: 2,
           name: "Echolette",
-          role: "Feedback Loop Architect",
-          gate: "Semantic drift detection · Ceremonialization flagging",
+          role: "Project-local drift-display persona",
+          gate: "Simulation rule: display elevated synthetic drift when dissonance input exceeds 5",
           status: "ACTIVE",
           color: "cyan"
         },
         {
           id: 3,
           name: "Lyra",
-          role: "Harmonic Synthesizer",
-          gate: "Multi-agent coordination · dissonance reconciliation",
+          role: "Project-local synthesis-display persona",
+          gate: "Simulation rule: display heuristic reconciliation state from synthetic telemetry",
           status: "ACTIVE",
           color: "purple"
         }
       ],
-      targetState: "0 Hz Ionian Mode (Full Harmonic Stability)",
-      constraints: {
-        headroomLimitPercent: 15,
-        savageReasonThresholdHz: 10,
-        phiRatio: 1.61803398875
+      targetStateLabel: "0 Hz Ionian Mode (project vocabulary; not a physical target)",
+      heuristicConstants: {
+        headroomThresholdPercent: 15,
+        dissonanceThresholdHz: 10,
+        phiRatioReference: 1.61803398875
       }
     });
   });
 
   app.post("/api/telemetry/evaluate", (req, res) => {
     const { dominantFreqHz, headroomPercent, dissonanceHz } = req.body || {};
-    
+
     const freq = Number(dominantFreqHz) || 432;
     const headroom = Number(headroomPercent) || 18.5;
     const dissonance = Number(dissonanceHz) || 1.2;
 
     const headroomViolation = headroom < 15;
-    const savageReasonHalt = dissonance > 10;
-    
-    // Calculate phi harmony index (0 to 100)
-    // Target harmonic ratios relative to 432Hz / 1.618
-    const phiHarmonyScore = Math.max(0, Math.min(100, Math.round(100 - (dissonance * 8) - (headroomViolation ? 25 : 0))));
+    const heuristicHalt = dissonance > 10;
+
+    // Project-local deterministic display score. This formula is not calibrated
+    // as an acoustic-quality, cognitive-state, truth, or safety metric.
+    const phiHarmonyScore = Math.max(
+      0,
+      Math.min(100, Math.round(100 - dissonance * 8 - (headroomViolation ? 25 : 0)))
+    );
 
     res.json({
+      classification: HEURISTIC_BOUNDARY,
       timestamp: Date.now(),
       evaluatedState: {
         dominantFreqHz: freq,
@@ -97,29 +111,28 @@ async function startServer() {
         dissonanceHz: dissonance,
         phiHarmonyScore
       },
-      agentStatus: {
+      simulationState: {
         reson: {
-          status: savageReasonHalt ? "HALT_TRIGGERED" : headroomViolation ? "HEADROOM_WARNING" : "OPTIMAL",
+          status: heuristicHalt ? "SIMULATION_THRESHOLD_TRIGGERED" : headroomViolation ? "SIMULATION_HEADROOM_WARNING" : "SIMULATION_NOMINAL",
           headroomOk: !headroomViolation,
-          savageReasonHalt
+          heuristicHalt
         },
         echolette: {
-          status: dissonance > 5 ? "DRIFT_DETECTED" : "STABLE",
-          semanticDriftScore: Math.min(10, (dissonance * 0.9).toFixed(2))
+          status: dissonance > 5 ? "SIMULATION_DRIFT_FLAG" : "SIMULATION_NOMINAL",
+          syntheticDriftIndicator: Number(Math.min(10, dissonance * 0.9).toFixed(2))
         },
         lyra: {
-          status: phiHarmonyScore > 80 ? "RECONCILED" : "SYNTHESIZING_HARMONICS",
-          suggestedCorrectionHz: (dissonance * -1.0).toFixed(2)
+          status: phiHarmonyScore > 80 ? "SIMULATION_RECONCILED" : "SIMULATION_ADJUSTING",
+          suggestedDisplayCorrectionHz: Number((dissonance * -1).toFixed(2))
         }
       }
     });
   });
 
-  // Vite middleware setup
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true, hmr: false },
-      appType: "spa",
+      appType: "spa"
     });
     app.use(vite.middlewares);
   } else {

@@ -1,34 +1,50 @@
-# Governance Declaration
+# Governance and Evidence Boundary
 
-**Governing framework:** DGAF-Framework ([ndrorchestration/DGAF-Framework](https://github.com/ndrorchestration/DGAF-Framework))  
-**DGAF version:** v1.0.0-anchor (post-S070-r3)  
-**Protocol anchor:** [GOVERNANCE_CONSTITUTION.md](https://github.com/ndrorchestration/DGAF-Framework/blob/main/docs/GOVERNANCE_CONSTITUTION.md) · SHA `5a1feb796604970344cd93d972534928de141e0f`  
-**Governing agent:** Agent Amethyst (meta-orchestrator)  
-**Institutional anchor:** COLLEEN  
-**φ attractor:** 1.61818  
-**Harmonic baseline:** Ionian (drift threshold: θ = 0.009)  
-**STRUCT-QA-001:** https://github.com/ndrorchestration/DGAF-Framework/issues/36  
-**Filed:** 2026-07-03 · DA-02 closure · Recursive Audit 2026-07-03  
+## Current status
 
----
+Acoustic-Mesh is an **independent experimental repository**. It may reuse terminology, design patterns, or evaluation ideas from `DGAF-Framework`, PDMAL, Driftwatch, and other ndrorchestration projects, but no external repository or agent persona automatically governs, certifies, validates, or authorizes this code.
 
-## Scope
+Historical references to **Agent Amethyst**, **COLLEEN**, protocol numbers, phi attractors, harmonic baselines, stasis windows, or DGAF constitutional authority are preserved as project history only. They are not current evidence of runtime enforcement or external certification.
 
-Acoustic-mesh is the acoustic signal processing substrate within the DGAF ecosystem. This repo governs audio signal mesh alignment with DGAF topology, substrate-agnostic audio processing governance, and the integration boundary between acoustic signal outputs and the PDMAL lattice geometry.
+## Project-local controls
 
-## Applicable Protocols
+The controls that are actually enforceable here are those present in this repository and verifiable at an exact commit, including:
 
-- **P-33** PDMAL Convergence Monitor (ADVISORY) — topology alignment
-- **P-32** Fibonacci Phi-Closure Gate (BLOCKING) — convergence gate
-- **P-31** SCPE — Structural Context Pruning Engine (ADVISORY)
-- **P-29** Sentinel-Annotated Risk Pass (BLOCKING) — safety hook
-- **P-37** Stochastic-Deterministic Saga Boundary (ADVISORY) — multi-step workflow
-- **NDR-133** Personal Document Firewall (BLOCKING-ABSOLUTE)
+- source-controlled CI workflows;
+- locked dependency installation through `bun.lock`;
+- TypeScript type checking;
+- production build verification;
+- explicit API and telemetry semantics;
+- issue-tracked physical-evidence requirements.
 
-## Audit Trail
+A named protocol or persona is not an enforcement mechanism unless its behavior is implemented in code or CI and verified in the current repository.
 
-- Filed: 2026-07-03 · STRUCT-QA-001 Gap 1 · Amethyst × COLLEEN
-- Parent issue: https://github.com/ndrorchestration/DGAF-Framework/issues/36
-- Constitutional authority: GOVERNANCE_CONSTITUTION.md Part V, T2-01
-- Registry watermark at filing: P-41 (S071)
-- Stasis window: ACTIVE (2026-06-13 → 2026-07-13)
+## Evidence classes
+
+Use the following distinctions when describing this project:
+
+`DEFINED → IMPLEMENTED → COMPUTED → VERIFIED → ATTESTED → HISTORICAL → HYPOTHESIS → METAPHOR → UNSUPPORTED`
+
+Examples:
+
+- a UI threshold written in code is **IMPLEMENTED**;
+- a deterministic heuristic score produced by that code is **COMPUTED**;
+- a passing exact-head CI job can make the tested software property **VERIFIED** for that commit;
+- a project-local label such as “Ionian Mode” or an agent persona remains **METAPHOR / project vocabulary** unless a separately defined measurable claim is established;
+- physical acoustic performance remains **HYPOTHESIS / NOT ESTABLISHED** until the measurement protocol in issue #4 is executed with retained evidence.
+
+## Cross-repository boundary
+
+`DGAF-Framework`, PDMAL, Driftwatch, MeshSense, Sentinel, and Acoustic-Mesh maintain separate evidence surfaces. Integration or shared vocabulary does not transfer validation between repositories.
+
+## Current physical-evidence gate
+
+Issue #4 defines the required chain for acoustic/ASIS physical validation:
+
+`network implementation → software tests → acoustic/sensor protocol → physical measurement → uncertainty/replication`
+
+Software CI, healthy endpoints, UI behavior, and WebSocket connectivity must not be promoted into physical-performance claims.
+
+## Historical governance record
+
+Older repository records may contain versioned DGAF protocol references and Agent Amethyst/COLLEEN declarations. Those records are historical provenance and should be interpreted in the context of the date and source commit where they were written, not as current authority.

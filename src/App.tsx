@@ -5,51 +5,49 @@ import { SpectrumAnalyzer } from './components/SpectrumAnalyzer';
 import { WebRTCController } from './components/WebRTCController';
 import { TelemetryLog, LogEntry } from './components/TelemetryLog';
 import { MeshNode, AcousticTelemetry, AgentSpec, SignalingMessage } from './types';
-import { ShieldCheck, Info, RefreshCw, Cpu, Activity } from 'lucide-react';
+import { Info } from 'lucide-react';
 
 export default function App() {
-  const [room, setRoom] = useState('schizophonic-studio-1');
+  const [room, setRoom] = useState('acoustic-mesh-demo-1');
   const [localPeerId, setLocalPeerId] = useState('');
   const [wsConnected, setWsConnected] = useState(false);
   const [peers, setPeers] = useState<MeshNode[]>([]);
   const [isAudioActive, setIsAudioActive] = useState(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
 
-  // Telemetry state
   const [telemetry, setTelemetry] = useState<AcousticTelemetry>({
     dominantFreqHz: 432,
     headroomPercent: 18.5,
     dissonanceHz: 1.2,
     phiHarmonyScore: 90,
     timestamp: Date.now(),
-    mode: '0 Hz Ionian Mode'
+    mode: 'historical Ionian-mode label'
   });
 
-  // Agent specs loaded from backend
   const [agents, setAgents] = useState<AgentSpec[]>([
     {
       id: 1,
-      name: "Reson",
-      role: "Harmonic Logic Gatekeeper",
-      gate: "15% headroom enforcement · Savage Reason halt (>10 Hz)",
-      status: "ACTIVE",
-      color: "emerald"
+      name: 'Reson',
+      role: 'Project-local threshold persona',
+      gate: 'Simulation rule: flag headroom below 15%; flag dissonance input above 10 Hz',
+      status: 'ACTIVE',
+      color: 'emerald'
     },
     {
       id: 2,
-      name: "Echolette",
-      role: "Feedback Loop Architect",
-      gate: "Semantic drift detection · Ceremonialization flagging",
-      status: "ACTIVE",
-      color: "cyan"
+      name: 'Echolette',
+      role: 'Project-local drift-display persona',
+      gate: 'Simulation rule: display elevated synthetic drift when dissonance input exceeds 5',
+      status: 'ACTIVE',
+      color: 'cyan'
     },
     {
       id: 3,
-      name: "Lyra",
-      role: "Harmonic Synthesizer",
-      gate: "Multi-agent coordination · dissonance reconciliation",
-      status: "ACTIVE",
-      color: "purple"
+      name: 'Lyra',
+      role: 'Project-local synthesis-display persona',
+      gate: 'Simulation rule: display heuristic reconciliation state from synthetic telemetry',
+      status: 'ACTIVE',
+      color: 'purple'
     }
   ]);
 
@@ -67,29 +65,22 @@ export default function App() {
     setLogs((prev) => [newEntry, ...prev].slice(0, 100));
   }, []);
 
-  // Fetch agent specs from API
   useEffect(() => {
     fetch('/api/agents')
       .then((res) => res.json())
       .then((data) => {
-        if (data?.agents) {
-          setAgents(data.agents);
-        }
+        if (data?.agents) setAgents(data.agents);
       })
       .catch((err) => {
-        console.warn('Using default agent registry specs:', err);
+        console.warn('Using bundled project-local persona specs:', err);
       });
   }, []);
 
-  // Connect to WebSocket signaling server
   const connectWebSocket = useCallback(() => {
-    if (wsRef.current) {
-      wsRef.current.close();
-    }
+    if (wsRef.current) wsRef.current.close();
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}`;
-
     addLog('info', `Connecting to WebSocket signaling endpoint at ${wsUrl}...`);
 
     const ws = new WebSocket(wsUrl);
@@ -97,12 +88,10 @@ export default function App() {
 
     ws.onopen = () => {
       setWsConnected(true);
-      addLog('info', `WebSocket signaling connection OPEN.`);
+      addLog('info', 'WebSocket signaling connection OPEN.');
 
-      // Send Join message
       const myId = `peer-${Math.random().toString(36).substr(2, 6)}`;
       setLocalPeerId(myId);
-
       ws.send(JSON.stringify({
         type: 'join',
         room,
@@ -116,7 +105,7 @@ export default function App() {
         const msg: SignalingMessage = JSON.parse(event.data);
 
         if (msg.type === 'joined') {
-          addLog('signal', `Successfully joined room "${msg.room}". Peers: ${msg.members?.length || 0}`);
+          addLog('signal', `Joined room "${msg.room}". Peers: ${msg.members?.length || 0}`);
           if (msg.members) {
             const remotePeers: MeshNode[] = msg.members
               .filter((m) => m.peerId !== msg.peerId)
@@ -145,7 +134,7 @@ export default function App() {
         } else if (msg.type === 'signal') {
           addLog('signal', `Received signal from ${msg.sender}: ${JSON.stringify(msg.data || msg)}`);
         } else if (msg.type === 'telemetry') {
-          addLog('telemetry', `Telemetry broadcast from ${msg.sender}: Freq ${msg.telemetry?.dominantFreqHz}Hz, Headroom ${msg.telemetry?.headroomPercent}%`);
+          addLog('telemetry', `Telemetry broadcast from ${msg.sender}: frequency ${msg.telemetry?.dominantFreqHz} Hz, headroom ${msg.telemetry?.headroomPercent}%`);
         }
       } catch (err) {
         console.error('WebSocket message parse error:', err);
@@ -163,7 +152,6 @@ export default function App() {
     };
   }, [room, addLog]);
 
-  // Connect on room change or mount
   useEffect(() => {
     connectWebSocket();
     return () => {
@@ -171,15 +159,13 @@ export default function App() {
     };
   }, [room, connectWebSocket]);
 
-  // Evaluate telemetry against API periodically or on change
   useEffect(() => {
     if (telemetry.dissonanceHz > 10) {
-      addLog('halt', `SAVAGE REASON HALT: Cognitive dissonance (${telemetry.dissonanceHz.toFixed(1)} Hz) exceeds 10 Hz threshold! Signal halted by Reson.`);
+      addLog('halt', `SIMULATION THRESHOLD: project-defined dissonance input (${telemetry.dissonanceHz.toFixed(1)} Hz) exceeded the demo threshold. No cognitive or safety interpretation is implied.`);
     } else if (telemetry.headroomPercent < 15) {
-      addLog('warning', `HEADROOM WARNING: Signal headroom (${telemetry.headroomPercent.toFixed(1)}%) below 15% Reson threshold.`);
+      addLog('warning', `SIMULATION WARNING: headroom input (${telemetry.headroomPercent.toFixed(1)}%) is below the demo threshold.`);
     }
 
-    // Broadcast telemetry over WebSocket
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({
         type: 'telemetry',
@@ -194,14 +180,12 @@ export default function App() {
   const handleSendSignal = (signalData: any) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify(signalData));
-      addLog('signal', `Broadcasted WebRTC ping signal to room ${room}`);
+      addLog('signal', `Broadcast signaling payload to room ${room}`);
     }
   };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
-      
-      {/* Navigation Header */}
       <Header
         room={room}
         setRoom={setRoom}
@@ -212,10 +196,14 @@ export default function App() {
         savageReasonHalt={savageReasonHalt}
       />
 
-      {/* Main Dashboard Layout */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
-        
-        {/* Top: 3 Agent Gatekeeper Cards */}
+        <aside className="rounded-xl border border-cyan-900/70 bg-cyan-950/20 p-4 text-sm text-cyan-100 flex gap-3">
+          <Info className="w-5 h-5 shrink-0 mt-0.5 text-cyan-400" />
+          <p>
+            <strong>Experimental simulation boundary:</strong> signaling and browser-audio code are executable software; persona labels, “dissonance” values, thresholds, and heuristic scores are project-local display constructs. They are not validated cognitive, physical-acoustic, truth, safety, or governance measurements.
+          </p>
+        </aside>
+
         <section>
           <AgentGatekeepers
             agents={agents}
@@ -225,9 +213,7 @@ export default function App() {
           />
         </section>
 
-        {/* Middle: Spectrum Analyzer & Mesh Controller */}
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
           <div className="lg:col-span-7">
             <SpectrumAnalyzer
               telemetry={telemetry}
@@ -248,41 +234,16 @@ export default function App() {
               telemetry={telemetry}
             />
           </div>
-
         </section>
 
-        {/* Bottom: Telemetry Console Log */}
         <section>
-          <TelemetryLog
-            logs={logs}
-            onClearLogs={() => setLogs([])}
-          />
+          <TelemetryLog logs={logs} onClearLogs={() => setLogs([])} />
         </section>
 
-        {/* Ecosystem Footer Info */}
-        <footer className="border-t border-slate-800/80 pt-6 pb-8 text-xs font-mono text-slate-500 space-y-3">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="text-slate-300 font-bold flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-cyan-400" />
-                Schizophonic Studio &bull; Acoustic-Mesh Substrate
-              </div>
-              <p className="text-slate-500">
-                Governed by DGAF / Agent Amethyst &bull; PhiLattice / PDMAL Ecosystem &bull; OpenTelemetry Observability
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3 text-slate-400">
-              <span className="px-2 py-1 bg-slate-900 rounded border border-slate-800">
-                Target: 0 Hz Ionian Mode
-              </span>
-              <span className="px-2 py-1 bg-slate-900 rounded border border-slate-800">
-                15% Headroom Enforced
-              </span>
-            </div>
-          </div>
+        <footer className="border-t border-slate-800/80 pt-6 pb-8 text-xs font-mono text-slate-500">
+          <p className="text-slate-300 font-bold">Acoustic-Mesh experimental engineering workspace</p>
+          <p className="mt-1">Runtime/signaling evidence is separate from acoustic-performance evidence. DGAF/PDMAL and historical persona terminology do not transfer validation or authority to this repository.</p>
         </footer>
-
       </main>
     </div>
   );
