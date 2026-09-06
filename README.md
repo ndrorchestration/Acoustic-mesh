@@ -1,62 +1,87 @@
 # Acoustic-Mesh
 
-![Status](https://img.shields.io/badge/Status-Active-green?style=flat-square)
-![License](https://img.shields.io/badge/License-Apache%202.0-01696f?style=flat-square)
-![Language](https://img.shields.io/badge/Language-JavaScript-yellow?style=flat-square)
-![Governed](https://img.shields.io/badge/Governed%20by-Agent%20Amethyst-7a39bb?style=flat-square)
-![Studio](https://img.shields.io/badge/Schizophonic-Studio%20Substrate-9b59b6?style=flat-square)
+**Experimental engineering workspace for browser audio visualization, WebSocket signaling, and acoustic-mesh interface research.**
 
-> **Governance:** DGAF / Agent Amethyst. See [DGAF-Framework](https://github.com/ndrorchestration/DGAF-Framework).  
-> **Studio:** Acoustic-Mesh is the WebRTC signal substrate for the **Schizophonic Studio** within the PhiLattice / PDMAL ecosystem.
+> **Epistemic status:** Active experimental engineering. The repository contains executable TypeScript/React/Express code and project-local heuristic visualizations. It does **not** establish physical acoustic performance, cognitive measurement, mathematically validated phi-harmonic behavior, DGAF efficacy, or autonomous agent governance.
 
-Real-time WebRTC phi-harmonic acoustic mesh — enabling the Schizophonic Studio signal chain for the ndrorchestration multi-agent lattice.
+## What is implemented
 
----
+The current codebase includes:
 
-## Schizophonic Studio Signal Chain
+- a React/Vite browser interface;
+- an Express/Node runtime;
+- WebSocket room/signaling infrastructure;
+- browser-facing audio/spectrum visualization components;
+- telemetry transport and project-local heuristic scoring;
+- a small status/API surface;
+- locked Bun dependencies plus CI type-check/build verification.
 
-Three agents govern the signal chain running on this mesh:
+The repository should be evaluated from the exact implementation and current CI results rather than from historical ecosystem terminology.
 
-| Agent | Studio ID | Role | Gate |
-|---|---|---|---|
-| **Reson** | #1 | Harmonic Logic Gatekeeper | 15% headroom enforcement · Savage Reason halt (>10 Hz) |
-| **Echolette** | #2 | Feedback Loop Architect | Semantic drift detection · Ceremonialization flagging |
-| **Lyra** | #3 | Harmonic Synthesizer | Multi-agent coordination · dissonance reconciliation |
+## Heuristic / simulation boundary
 
-**Signal rules:**
-- 15% headroom maintained at all times
-- Savage Reason (>10 Hz cognitive dissonance) → immediate halt protocol
-- Target state: **0 Hz Ionian Mode** (full harmonic stability)
+Historical versions of this project used terms such as **Reson**, **Echolette**, **Lyra**, **Schizophonic Studio**, **PhiLattice**, **Ionian Mode**, **Savage Reason**, and **phi harmony**. Those labels are retained where useful as interface/research vocabulary, but they are **project-local simulation concepts**.
 
-Full agent specs: [DGAF-Framework/docs/agents/canonical-agent-registry.md](https://github.com/ndrorchestration/DGAF-Framework/blob/main/docs/agents/canonical-agent-registry.md)
+In particular:
 
----
+- a numeric `phiHarmonyScore` is a deterministic UI heuristic, not a validated acoustic-quality metric;
+- a `dissonanceHz` input is a project-defined simulation variable, not a measurement of cognitive dissonance;
+- 15% and 10 Hz thresholds are experimental interface constants, not externally established safety or acoustic standards;
+- agent/persona names describe UI roles or research metaphors and do not independently govern the runtime;
+- references to DGAF or PDMAL describe ecosystem relationships and do not transfer validation to this repository.
 
-## Technical Stack
+## Software verification vs. physical validation
 
-- **WebRTC** — Real-time peer communication substrate
-- **JavaScript** — Signal processing and mesh coordination
-- **Phi-Harmonic Modal Analysis** — Frequency-based stability scoring
-- **OpenTelemetry OTel v1.41.0+** — Observability
+Software correctness and physical acoustic performance are separate evidence tracks.
 
----
+Current software work can establish things such as:
 
-## IP Notice
+`source → locked dependencies → type check → build → signaling/runtime behavior`
 
-Core phi constants, frequency tuning tables, and constraint optimization algorithms are **not included** in this repository. Signal chain architecture and mesh coordination logic only.
+Physical/acoustic claims require a separate chain:
 
----
+`measurement protocol → hardware/environment record → raw measurements → error/uncertainty analysis → replication`
 
-## Related Ecosystem
+Issue #4 tracks that physical-evidence gate. Until it closes with reproducible measurements, acoustic localization, sensing accuracy, spatial reconstruction, or similar capability claims remain **NOT ESTABLISHED**.
 
-- [DGAF-Framework](https://github.com/ndrorchestration/DGAF-Framework) — Governance spine + agent registry
-- [Driftwatch](https://github.com/ndrorchestration/Driftwatch) — Phi-driven drift detection
-- [3d-visualization-hub](https://github.com/ndrorchestration/3d-visualization-hub) — GCP Phase 4 visualization layer
-- [sentinel-governance](https://github.com/ndrorchestration/sentinel-governance) — CI/CD integrity monitoring
+## Local verification
 
----
+```bash
+bun install --frozen-lockfile
+bun run typecheck
+bun run build
+bun run dev
+```
+
+The runtime exposes a WebSocket signaling surface and API routes including `/api/health`, `/api/rooms`, `/api/agents`, and `/api/telemetry/evaluate`. The agent/telemetry routes explicitly describe their outputs as project-local simulation/heuristic data.
+
+## Repository status
+
+| Claim | Status |
+|---|---|
+| React/Vite/Express application exists | IMPLEMENTED |
+| WebSocket signaling/room code exists | IMPLEMENTED |
+| Locked dependency install path exists | IMPLEMENTED |
+| Type-check/build CI | IMPLEMENTED; verify current PR/main run |
+| Heuristic telemetry UI | IMPLEMENTED |
+| Heuristic values are scientifically calibrated | **NOT ESTABLISHED** |
+| Physical acoustic performance | **NOT ESTABLISHED** |
+| Autonomous agent governance | **NOT ESTABLISHED** |
+| DGAF/PDMAL effectiveness transfers here | **NO — separate evidence boundary** |
+
+## Licensing note
+
+The repository currently has **no root `LICENSE` file**. Historical metadata has contained conflicting license labels. This README therefore does not assert a license until that repository-level legal/administrative decision is resolved explicitly.
+
+## Related projects
+
+- `DGAF-Framework` — separate governance/evaluation research track.
+- `Driftwatch` — separate drift-detection/evaluation track.
+- `Meshsense` — separate sensing/failure-mode companion experiment.
+- `sentinel-governance` — separate CI/CD automation track.
+
+Cross-repository references do not constitute mutual validation.
 
 ## Provenance
 
-Developed by [Ndr "Ender" Hensel](https://github.com/ndrorchestration) — AI Orchestration Engineer & Systems Architect, Columbus OH.  
-[LinkedIn](https://linkedin.com/in/andrewhensel) · [GitHub](https://github.com/ndrorchestration)
+Maintained by Ndr / Ender Hensel (`ndrorchestration`).
