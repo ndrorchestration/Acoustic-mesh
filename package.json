@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": false,
   "description": "Experimental TypeScript acoustic-mesh and signaling workspace with browser audio visualization and project-local heuristic telemetry.",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
