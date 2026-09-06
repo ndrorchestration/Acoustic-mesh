@@ -69,9 +69,11 @@ The runtime exposes a WebSocket signaling surface and API routes including `/api
 | Autonomous agent governance | **NOT ESTABLISHED** |
 | DGAF/PDMAL effectiveness transfers here | **NO — separate evidence boundary** |
 
-## Licensing note
+## License
 
-The repository currently has **no root `LICENSE` file**. Historical metadata has contained conflicting license labels. This README therefore does not assert a license until that repository-level legal/administrative decision is resolved explicitly.
+MIT License — see [`LICENSE`](LICENSE).
+
+This restores the license previously and explicitly declared in repository history on 2026-08-15 (`fbaa6082…`, followed by `1753af4d…`). Restoring that file reconciles the current tree with the repository's own prior licensing decision; it does not infer a new license from unrelated metadata.
 
 ## Related projects
 
