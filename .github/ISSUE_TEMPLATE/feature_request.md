@@ -17,6 +17,3 @@ Any alternative approaches you considered.
 
 ## Additional Context
 Add any other context, diagrams, or references here.
-
----
-*Governed by [DGAF-Framework](https://github.com/ndrorchestration/DGAF-Framework) · Meta-orchestrated by Agent Amethyst*
