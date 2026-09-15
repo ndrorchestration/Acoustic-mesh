@@ -48,12 +48,13 @@ jobs:
           test -f CONTRIBUTING.md
           test -f NOTICE
           test -f .github/pull_request_template.md
+          test -d .github/ISSUE_TEMPLATE
           grep -q "Experimental engineering" README.md
           grep -q "project-local" GOVERNANCE.md
 
-          if grep -Eqi \
+          if grep -R -Eqi \
             'meta-orchestrated by[[:space:]]+\*\*?Agent Amethyst|governed under[[:space:]]+the.*DGAF|production-grade multi-device acoustic mesh|Governed by.*DGAF-Framework' \
-            CONTRIBUTING.md NOTICE .github/pull_request_template.md; then
+            CONTRIBUTING.md NOTICE .github/pull_request_template.md .github/ISSUE_TEMPLATE; then
             echo "Stale cross-repository authority or production claim found in a current-facing contribution surface." >&2
             exit 1
           fi

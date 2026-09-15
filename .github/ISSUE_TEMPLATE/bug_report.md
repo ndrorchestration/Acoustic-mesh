@@ -27,6 +27,3 @@ What actually happened.
 
 ## Additional Context
 Add any other context, logs, or screenshots here.
-
----
-*Governed by [DGAF-Framework](https://github.com/ndrorchestration/DGAF-Framework) · Meta-orchestrated by Agent Amethyst*
