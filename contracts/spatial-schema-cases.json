@@ -770,6 +770,47 @@
         "dataset_trial_id": "synthetic-trial-01",
         "consent_retention_class": "synthetic"
       }
+    },
+    {
+      "name": "unexpected-object-prototype-key",
+      "schema_valid": false,
+      "node_valid": false,
+      "observation": {
+        "schema_version": "0.1.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": 1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "500",
+        "frame_id": "sim-body",
+        "transform_revision": "t1",
+        "unit": "radian",
+        "measurement": [
+          0.3,
+          0.4
+        ],
+        "uncertainty": {
+          "kind": "covariance",
+          "values": [
+            0.04,
+            0,
+            0,
+            0.09
+          ]
+        },
+        "quality_flags": [],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic",
+        "constructor": "shadow",
+        "toString": "shadow"
+      }
     }
   ]
 }
