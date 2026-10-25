@@ -95,6 +95,18 @@ describe('SPATIAL-OBS synthetic receiver integrity gate (never authorizes fusion
     assert.throws(() => test(good(),[item]),/ACCESSOR_NOT_ARTIFACT/);
     assert.equal(accesses,0);
   });
+  it('refuses an empty observation batch instead of returning REVIEW_ONLY', () => {
+    assert.throws(() => assessReceiverFixture([],trust,[],policy),/EMPTY_OBSERVATION_BATCH/);
+  });
+  it('refuses sparse and accessor-backed artifact arrays without running getters', () => {
+    const accessor=evidence();
+    let calls=0;
+    Object.defineProperty(accessor,'0',{enumerable:true,get(){calls++;return evidence()[0];}});
+    assert.throws(() => test(good(),accessor),/RAW_ARTIFACT_ARRAY_ACCESSOR/);
+    assert.equal(calls,0);
+    const sparse=evidence(); sparse.length=2;
+    assert.throws(() => test(good(),sparse),/INVALID_RAW_ARTIFACT_ARRAY_SHAPE/);
+  });
   it('does not claim an authenticated receipt or deployment outcome', () => {
     const result=test();
     assert.equal(result.status,'REVIEW_ONLY');
