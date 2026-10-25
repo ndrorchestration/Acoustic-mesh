@@ -118,6 +118,22 @@ describe('SPATIAL-OBS-CONTRACT-01 synthetic candidate', () => {
     assert.throws(() => replay([deeplyNested],trust),/JSON_COMPLEXITY_LIMIT/);
     assert.throws(() => replay([good({observation_id:'x'.repeat(1100000)})],trust),/JSON_SIZE_LIMIT/);
   });
+  it('rejects oversized clock decimals before BigInt parsing in direct admission', () => {
+    const obs=good({clock_offset_uncertainty_ns:'1'.repeat(100000)});
+    const result=checkObservation(obs, trust);
+    assert.equal(result.ok,false);
+    assert.ok(result.reasons.includes('INVALID_CLOCK_NUMBER'));
+    assert.ok(result.reasons.includes('STRING_MAXIMUM:clock_offset_uncertainty_ns'));
+  });
+  it('rejects oversized monotonic values and corrupt prior-stream times', () => {
+    const o=good({monotonic_time_ns:'9'.repeat(100000)});
+    assert.ok(checkObservation(o,trust).reasons.includes('INVALID_CLOCK_NUMBER'));
+    const previous=new Map([[
+      JSON.stringify(['sim-device','sim-mic-1','sim-clock']),
+      {sequence:0,monotonic_time_ns:'9'.repeat(100000)}
+    ]]);
+    assert.ok(checkObservation(good(),trust,previous).reasons.includes('INVALID_PRIOR_STREAM_TIME'));
+  });
   it('refuses unknown dimensions before attempting matrix decomposition', () => {
     assert.ok(checkObservation(good({measurement:Array(9).fill(0)}),trust).reasons.includes('ARRAY_MAXIMUM:measurement'));
   });
