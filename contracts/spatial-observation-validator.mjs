@@ -32,17 +32,31 @@ export function canonical(value) {
       seen.add(v);
       if (Array.isArray(v)) {
         if (v.length > 8192) throw new TypeError('JSON_ARRAY_LIMIT');
-        return '[' + v.map(item => encode(item, depth + 1)).join(',') + ']';
+        const own = Reflect.ownKeys(v);
+        if (own.length !== v.length + 1 || own.some(k =>
+          typeof k !== 'string' || (k !== 'length' && !/^(0|[1-9][0-9]*)$/.test(k))))
+          throw new TypeError('NON_JSON_ARRAY_SHAPE');
+        const items = [];
+        for (let i = 0; i < v.length; i++) {
+          const descriptor = Object.getOwnPropertyDescriptor(v, String(i));
+          if (!descriptor || !Object.hasOwn(descriptor, 'value'))
+            throw new TypeError('SPARSE_OR_ACCESSOR_ARRAY');
+          items.push(encode(descriptor.value, depth + 1));
+        }
+        return '[' + items.join(',') + ']';
       }
       if (!plain(v) || (Object.getPrototypeOf(v) !== Object.prototype &&
         Object.getPrototypeOf(v) !== null)) throw new TypeError('NON_JSON_OBJECT');
-      const keys = Object.keys(v).sort();
-      if (keys.length > 512) throw new TypeError('JSON_OBJECT_LIMIT');
+      const own = Reflect.ownKeys(v);
+      if (own.length > 512) throw new TypeError('JSON_OBJECT_LIMIT');
+      if (own.some(k => typeof k !== 'string')) throw new TypeError('NON_JSON_SYMBOL_KEY');
+      const keys = own.sort();
       return '{' + keys.map(k => {
         characters += k.length;
         if (characters > 1048576) throw new TypeError('JSON_SIZE_LIMIT');
         const descriptor = Object.getOwnPropertyDescriptor(v, k);
         if (!descriptor || !Object.hasOwn(descriptor, 'value')) throw new TypeError('ACCESSOR_NOT_JSON');
+        if (!descriptor.enumerable) throw new TypeError('NON_ENUMERABLE_PROPERTY');
         return JSON.stringify(k) + ':' + encode(descriptor.value, depth + 1);
       }).join(',') + '}';
     }
@@ -152,16 +166,20 @@ export function checkObservation(o, trusted, previous = new Map()) {
 export function replay(observations, trusted) {
   if (!Array.isArray(observations)) throw new TypeError('OBSERVATIONS_NOT_ARRAY');
   if (observations.length > 128) throw new TypeError('BATCH_SIZE_LIMIT');
-  if (!plain(trusted) || !plain(trusted.sensors) || Object.keys(trusted.sensors).length > 128) throw new TypeError('INVALID_TRUST_CONTEXT');
-  // A change in any input field or receiver trust map MUST alter the receipt.
-  // Hashes are not signatures, approvals or attestations of raw hardware data.
+  // Capture one strict JSON data-only snapshot before evaluating. Never admit
+  // against caller-owned mutable input after the receipt is bound.
   const bytes = canonical({ observations, trusted });
   if (Buffer.byteLength(bytes, 'utf8') > 2097152) throw new TypeError('INPUT_BYTES_LIMIT');
+  const snapshot = JSON.parse(bytes);
+  if (!plain(snapshot.trusted) || !plain(snapshot.trusted.sensors) ||
+      Object.keys(snapshot.trusted.sensors).length > 128) throw new TypeError('INVALID_TRUST_CONTEXT');
+  // Input digest binds exactly the immutable-by-isolation values evaluated below.
+  // Hashes are not signatures, approvals or attestations of raw hardware data.
   const input_sha256 = sha(bytes);
   const seen = new Map();
   const seenIds = new Set();
-  const decisions = observations.map((o, index) => {
-    const verdict = checkObservation(o, trusted, seen);
+  const decisions = snapshot.observations.map((o, index) => {
+    const verdict = checkObservation(o, snapshot.trusted, seen);
     if (typeof o?.observation_id === 'string') {
       if (seenIds.has(o.observation_id)) {
         verdict.reasons.push('DUPLICATE_OBSERVATION_ID');
