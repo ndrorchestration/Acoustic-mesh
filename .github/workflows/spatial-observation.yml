@@ -1,0 +1,25 @@
+name: Spatial observation contract (synthetic candidate)
+on:
+  pull_request:
+    paths:
+      - 'contracts/**'
+      - 'docs/SPATIAL_OBSERVATION_CONTRACT.md'
+      - '.github/workflows/spatial-observation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'contracts/**'
+      - 'docs/SPATIAL_OBSERVATION_CONTRACT.md'
+      - '.github/workflows/spatial-observation.yml'
+permissions:
+  contents: read
+jobs:
+  synthetic-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Node built-in synthetic contract tests
+        run: node --test contracts/spatial-observation.test.mjs
