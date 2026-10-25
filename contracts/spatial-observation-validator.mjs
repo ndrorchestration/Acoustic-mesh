@@ -41,7 +41,9 @@ export function canonical(value) {
       return '{' + keys.map(k => {
         characters += k.length;
         if (characters > 1048576) throw new TypeError('JSON_SIZE_LIMIT');
-        return JSON.stringify(k) + ':' + encode(v[k], depth + 1);
+        const descriptor = Object.getOwnPropertyDescriptor(v, k);
+        if (!descriptor || !Object.hasOwn(descriptor, 'value')) throw new TypeError('ACCESSOR_NOT_JSON');
+        return JSON.stringify(k) + ':' + encode(descriptor.value, depth + 1);
       }).join(',') + '}';
     }
     throw new TypeError('NON_JSON_VALUE');
