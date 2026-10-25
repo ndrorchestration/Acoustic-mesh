@@ -1,0 +1,775 @@
+{
+  "purpose": "Independent schema structural cases; contextual admission is separately modeled by node_valid",
+  "cases": [
+    {
+      "name": "valid-baseline",
+      "schema_valid": true,
+      "node_valid": true,
+      "observation": {
+        "schema_version": "0.1.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": 1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "500",
+        "frame_id": "sim-body",
+        "transform_revision": "t1",
+        "unit": "radian",
+        "measurement": [
+          0.3,
+          0.4
+        ],
+        "uncertainty": {
+          "kind": "covariance",
+          "values": [
+            0.04,
+            0,
+            0,
+            0.09
+          ]
+        },
+        "quality_flags": [],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic"
+      }
+    },
+    {
+      "name": "valid-signed-covariance",
+      "schema_valid": true,
+      "node_valid": true,
+      "observation": {
+        "schema_version": "0.1.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": 1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "500",
+        "frame_id": "sim-body",
+        "transform_revision": "t1",
+        "unit": "radian",
+        "measurement": [
+          0.3,
+          0.4
+        ],
+        "uncertainty": {
+          "kind": "covariance",
+          "values": [
+            0.04,
+            -0.01,
+            -0.01,
+            0.09
+          ]
+        },
+        "quality_flags": [],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic"
+      }
+    },
+    {
+      "name": "valid-stddev",
+      "schema_valid": true,
+      "node_valid": true,
+      "observation": {
+        "schema_version": "0.1.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": 1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "500",
+        "frame_id": "sim-body",
+        "transform_revision": "t1",
+        "unit": "radian",
+        "measurement": [
+          0.3,
+          0.4
+        ],
+        "uncertainty": {
+          "kind": "stddev",
+          "values": [
+            0,
+            0.2
+          ]
+        },
+        "quality_flags": [],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic"
+      }
+    },
+    {
+      "name": "valid-UTC-anchor",
+      "schema_valid": true,
+      "node_valid": true,
+      "observation": {
+        "schema_version": "0.1.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": 1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "500",
+        "frame_id": "sim-body",
+        "transform_revision": "t1",
+        "unit": "radian",
+        "measurement": [
+          0.3,
+          0.4
+        ],
+        "uncertainty": {
+          "kind": "covariance",
+          "values": [
+            0.04,
+            0,
+            0,
+            0.09
+          ]
+        },
+        "quality_flags": [],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic",
+        "wall_clock_anchor_utc": "2026-10-25T01:23:45Z"
+      }
+    },
+    {
+      "name": "missing-unit",
+      "schema_valid": false,
+      "node_valid": false,
+      "observation": {
+        "schema_version": "0.1.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": 1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "500",
+        "frame_id": "sim-body",
+        "transform_revision": "t1",
+        "measurement": [
+          0.3,
+          0.4
+        ],
+        "uncertainty": {
+          "kind": "covariance",
+          "values": [
+            0.04,
+            0,
+            0,
+            0.09
+          ]
+        },
+        "quality_flags": [],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic"
+      }
+    },
+    {
+      "name": "wrong-measurement-type",
+      "schema_valid": false,
+      "node_valid": false,
+      "observation": {
+        "schema_version": "0.1.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": 1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "500",
+        "frame_id": "sim-body",
+        "transform_revision": "t1",
+        "unit": "radian",
+        "measurement": "0.3",
+        "uncertainty": {
+          "kind": "covariance",
+          "values": [
+            0.04,
+            0,
+            0,
+            0.09
+          ]
+        },
+        "quality_flags": [],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic"
+      }
+    },
+    {
+      "name": "unexpected-field",
+      "schema_valid": false,
+      "node_valid": false,
+      "observation": {
+        "schema_version": "0.1.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": 1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "500",
+        "frame_id": "sim-body",
+        "transform_revision": "t1",
+        "unit": "radian",
+        "measurement": [
+          0.3,
+          0.4
+        ],
+        "uncertainty": {
+          "kind": "covariance",
+          "values": [
+            0.04,
+            0,
+            0,
+            0.09
+          ]
+        },
+        "quality_flags": [],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic",
+        "unexpected_metric": 1
+      }
+    },
+    {
+      "name": "invalid-SHA256",
+      "schema_valid": false,
+      "node_valid": false,
+      "observation": {
+        "schema_version": "0.1.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": 1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "500",
+        "frame_id": "sim-body",
+        "transform_revision": "t1",
+        "unit": "radian",
+        "measurement": [
+          0.3,
+          0.4
+        ],
+        "uncertainty": {
+          "kind": "covariance",
+          "values": [
+            0.04,
+            0,
+            0,
+            0.09
+          ]
+        },
+        "quality_flags": [],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "oops",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic"
+      }
+    },
+    {
+      "name": "negative-sequence",
+      "schema_valid": false,
+      "node_valid": false,
+      "observation": {
+        "schema_version": "0.1.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": -1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "500",
+        "frame_id": "sim-body",
+        "transform_revision": "t1",
+        "unit": "radian",
+        "measurement": [
+          0.3,
+          0.4
+        ],
+        "uncertainty": {
+          "kind": "covariance",
+          "values": [
+            0.04,
+            0,
+            0,
+            0.09
+          ]
+        },
+        "quality_flags": [],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic"
+      }
+    },
+    {
+      "name": "version-conflict",
+      "schema_valid": false,
+      "node_valid": false,
+      "observation": {
+        "schema_version": "2.0.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": 1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "500",
+        "frame_id": "sim-body",
+        "transform_revision": "t1",
+        "unit": "radian",
+        "measurement": [
+          0.3,
+          0.4
+        ],
+        "uncertainty": {
+          "kind": "covariance",
+          "values": [
+            0.04,
+            0,
+            0,
+            0.09
+          ]
+        },
+        "quality_flags": [],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic"
+      }
+    },
+    {
+      "name": "offset-not-UTC",
+      "schema_valid": false,
+      "node_valid": false,
+      "observation": {
+        "schema_version": "0.1.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": 1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "500",
+        "frame_id": "sim-body",
+        "transform_revision": "t1",
+        "unit": "radian",
+        "measurement": [
+          0.3,
+          0.4
+        ],
+        "uncertainty": {
+          "kind": "covariance",
+          "values": [
+            0.04,
+            0,
+            0,
+            0.09
+          ]
+        },
+        "quality_flags": [],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic",
+        "wall_clock_anchor_utc": "2026-10-25T01:23:45+01:00"
+      }
+    },
+    {
+      "name": "invalid-day",
+      "schema_valid": false,
+      "node_valid": false,
+      "observation": {
+        "schema_version": "0.1.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": 1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "500",
+        "frame_id": "sim-body",
+        "transform_revision": "t1",
+        "unit": "radian",
+        "measurement": [
+          0.3,
+          0.4
+        ],
+        "uncertainty": {
+          "kind": "covariance",
+          "values": [
+            0.04,
+            0,
+            0,
+            0.09
+          ]
+        },
+        "quality_flags": [],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic",
+        "wall_clock_anchor_utc": "2026-02-30T01:23:45Z"
+      }
+    },
+    {
+      "name": "negative-stddev",
+      "schema_valid": false,
+      "node_valid": false,
+      "observation": {
+        "schema_version": "0.1.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": 1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "500",
+        "frame_id": "sim-body",
+        "transform_revision": "t1",
+        "unit": "radian",
+        "measurement": [
+          0.3,
+          0.4
+        ],
+        "uncertainty": {
+          "kind": "stddev",
+          "values": [
+            -0.1,
+            0.2
+          ]
+        },
+        "quality_flags": [],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic"
+      }
+    },
+    {
+      "name": "extra-uncertainty-property",
+      "schema_valid": false,
+      "node_valid": false,
+      "observation": {
+        "schema_version": "0.1.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": 1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "500",
+        "frame_id": "sim-body",
+        "transform_revision": "t1",
+        "unit": "radian",
+        "measurement": [
+          0.3,
+          0.4
+        ],
+        "uncertainty": {
+          "kind": "stddev",
+          "values": [
+            0,
+            0.2
+          ],
+          "unexpected": true
+        },
+        "quality_flags": [],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic"
+      }
+    },
+    {
+      "name": "duplicate-quality-flag",
+      "schema_valid": false,
+      "node_valid": false,
+      "observation": {
+        "schema_version": "0.1.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": 1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "500",
+        "frame_id": "sim-body",
+        "transform_revision": "t1",
+        "unit": "radian",
+        "measurement": [
+          0.3,
+          0.4
+        ],
+        "uncertainty": {
+          "kind": "covariance",
+          "values": [
+            0.04,
+            0,
+            0,
+            0.09
+          ]
+        },
+        "quality_flags": [
+          "drop",
+          "drop"
+        ],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic"
+      }
+    },
+    {
+      "name": "unknown-unit",
+      "schema_valid": false,
+      "node_valid": false,
+      "observation": {
+        "schema_version": "0.1.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": 1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "500",
+        "frame_id": "sim-body",
+        "transform_revision": "t1",
+        "unit": "furlong",
+        "measurement": [
+          0.3,
+          0.4
+        ],
+        "uncertainty": {
+          "kind": "covariance",
+          "values": [
+            0.04,
+            0,
+            0,
+            0.09
+          ]
+        },
+        "quality_flags": [],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic"
+      }
+    },
+    {
+      "name": "empty-measurement",
+      "schema_valid": false,
+      "node_valid": false,
+      "observation": {
+        "schema_version": "0.1.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": 1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "500",
+        "frame_id": "sim-body",
+        "transform_revision": "t1",
+        "unit": "radian",
+        "measurement": [],
+        "uncertainty": {
+          "kind": "covariance",
+          "values": [
+            0.04,
+            0,
+            0,
+            0.09
+          ]
+        },
+        "quality_flags": [],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic"
+      }
+    },
+    {
+      "name": "empty-uncertainty",
+      "schema_valid": false,
+      "node_valid": false,
+      "observation": {
+        "schema_version": "0.1.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": 1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "500",
+        "frame_id": "sim-body",
+        "transform_revision": "t1",
+        "unit": "radian",
+        "measurement": [
+          0.3,
+          0.4
+        ],
+        "uncertainty": {
+          "kind": "stddev",
+          "values": []
+        },
+        "quality_flags": [],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic"
+      }
+    },
+    {
+      "name": "semantic-only-mismatched-frame",
+      "schema_valid": true,
+      "node_valid": false,
+      "observation": {
+        "schema_version": "0.1.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": 1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "500",
+        "frame_id": "foreign-map",
+        "transform_revision": "t1",
+        "unit": "radian",
+        "measurement": [
+          0.3,
+          0.4
+        ],
+        "uncertainty": {
+          "kind": "covariance",
+          "values": [
+            0.04,
+            0,
+            0,
+            0.09
+          ]
+        },
+        "quality_flags": [],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic"
+      }
+    },
+    {
+      "name": "semantic-only-large-clock-offset",
+      "schema_valid": true,
+      "node_valid": false,
+      "observation": {
+        "schema_version": "0.1.0",
+        "observation_id": "trial-01/obs-1",
+        "modality": "acoustic",
+        "device_id": "sim-device",
+        "sensor_id": "sim-mic-1",
+        "sequence": 1,
+        "monotonic_time_ns": "9007199254740993000",
+        "timebase_id": "sim-clock",
+        "clock_offset_uncertainty_ns": "5000001",
+        "frame_id": "sim-body",
+        "transform_revision": "t1",
+        "unit": "radian",
+        "measurement": [
+          0.3,
+          0.4
+        ],
+        "uncertainty": {
+          "kind": "covariance",
+          "values": [
+            0.04,
+            0,
+            0,
+            0.09
+          ]
+        },
+        "quality_flags": [],
+        "calibration_id": "sim-calibration-1",
+        "software_git_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "firmware_version": "synthetic-v1",
+        "raw_artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "dataset_trial_id": "synthetic-trial-01",
+        "consent_retention_class": "synthetic"
+      }
+    }
+  ]
+}
