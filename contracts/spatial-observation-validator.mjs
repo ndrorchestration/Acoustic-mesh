@@ -4,7 +4,7 @@ import schema from './spatial-observation-v0.1.schema.json' with { type: 'json' 
 const props = schema.properties;
 const required = new Set(schema.required);
 const sha = (value) => createHash('sha256').update(value).digest('hex');
-const decimal = (value) => typeof value === 'string' && /^(0|[1-9][0-9]*)$/.test(value);
+const decimal = (value) => typeof value === 'string' && value.length <= 40 && /^(0|[1-9][0-9]*)$/.test(value);
 const plain = (x) => x !== null && typeof x === 'object' && !Array.isArray(x);
 const finite = (x) => typeof x === 'number' && Number.isFinite(x);
 const keyOf = (o) => JSON.stringify([o.device_id, o.sensor_id, o.timebase_id]);
@@ -138,9 +138,10 @@ export function checkObservation(o, trusted, previous = new Map()) {
   if (decimal(o.clock_offset_uncertainty_ns) && (!decimal(trusted?.max_clock_uncertainty_ns) ||
       BigInt(o.clock_offset_uncertainty_ns) > BigInt(trusted.max_clock_uncertainty_ns))) reasons.push('CLOCK_UNCERTAINTY_EXCEEDED');
   const prev = previous.get(keyOf(o));
-  if (prev && decimal(o.monotonic_time_ns) &&
+  if (prev && decimal(o.monotonic_time_ns) && decimal(prev.monotonic_time_ns) &&
       (o.sequence <= prev.sequence || BigInt(o.monotonic_time_ns) <= BigInt(prev.monotonic_time_ns))) reasons.push('NON_MONOTONIC');
-  if (prev && Number.isSafeInteger(o.sequence) && o.sequence > prev.sequence + 1) reasons.push('SEQUENCE_GAP');
+  if (prev && !decimal(prev.monotonic_time_ns)) reasons.push('INVALID_PRIOR_STREAM_TIME');
+  if (prev && Number.isSafeInteger(o.sequence) && Number.isSafeInteger(prev.sequence) && o.sequence > prev.sequence + 1) reasons.push('SEQUENCE_GAP');
   if (Array.isArray(o.quality_flags) && o.quality_flags.some(f => ['packet_loss','calibration_stale','transform_stale','clock_untrusted'].includes(f))) reasons.push('QUALITY_BLOCKED');
   return { ok: reasons.length === 0, reasons: [...new Set(reasons)].sort() };
 }
