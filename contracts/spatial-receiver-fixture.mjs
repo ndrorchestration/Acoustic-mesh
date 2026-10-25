@@ -17,6 +17,7 @@ export function assessReceiverFixture(observations, trusted, rawArtifacts, polic
   // The candidate observation engine itself checks replay shape/size and
   // evaluates an isolated JSON-only snapshot of receiver context and data.
   const evaluated = JSON.parse(canonical({ observations, trusted, policy }));
+  if (!evaluated.observations.length) throw new TypeError('EMPTY_OBSERVATION_BATCH');
   const replayReceipt = replay(evaluated.observations, evaluated.trusted);
   const policyDigest = digest(canonical(evaluated.policy));
   const active = evaluated.policy;
@@ -29,6 +30,16 @@ export function assessReceiverFixture(observations, trusted, rawArtifacts, polic
 
   if (!Array.isArray(rawArtifacts) || rawArtifacts.length > 128)
     throw new TypeError('INVALID_RAW_ARTIFACT_COLLECTION');
+  const artifactKeys = Reflect.ownKeys(rawArtifacts);
+  if (artifactKeys.length !== rawArtifacts.length + 1 ||
+      artifactKeys.some(k => typeof k !== 'string' ||
+        (k !== 'length' && !/^(0|[1-9][0-9]*)$/.test(k))))
+    throw new TypeError('INVALID_RAW_ARTIFACT_ARRAY_SHAPE');
+  // Validate array indices before for-of can read from a getter.
+  for (let i = 0; i < rawArtifacts.length; i++) {
+    const desc = Object.getOwnPropertyDescriptor(rawArtifacts, String(i));
+    if (!desc || !hasOwn(desc, 'value')) throw new TypeError('RAW_ARTIFACT_ARRAY_ACCESSOR');
+  }
   const evidence = new Map();
   let totalBytes = 0;
   const duplicateIds = new Set();
