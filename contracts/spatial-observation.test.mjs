@@ -134,6 +134,48 @@ describe('SPATIAL-OBS-CONTRACT-01 synthetic candidate', () => {
     assert.throws(() => replay([good()],t),/ACCESSOR_NOT_JSON/);
     assert.equal(accesses,0);
   });
+  it('rejects an accessor-backed measurement array without executing getters', () => {
+    const array=[0.3,0.4];
+    let calls=0;
+    Object.defineProperty(array,'1',{enumerable:true,configurable:true,
+      get(){calls++; return 0.4;}});
+    assert.throws(() => replay([good({measurement:array})],trust),/SPARSE_OR_ACCESSOR_ARRAY/);
+    assert.equal(calls,0);
+  });
+  it('rejects accessor-backed top-level observation batches without getter execution', () => {
+    const batch=[good()];
+    let calls=0;
+    Object.defineProperty(batch,'0',{enumerable:true,configurable:true,
+      get(){calls++; return good();}});
+    assert.throws(() => replay(batch,trust),/SPARSE_OR_ACCESSOR_ARRAY/);
+    assert.equal(calls,0);
+  });
+  it('rejects sparse arrays, extra array properties and symbol keyed observation data', () => {
+    const sparse=[good()]; sparse.length=2;
+    assert.throws(() => replay(sparse,trust),/NON_JSON_ARRAY_SHAPE/);
+    const extras=[good()]; extras.extra='ignored';
+    assert.throws(() => replay(extras,trust),/NON_JSON_ARRAY_SHAPE/);
+    const obs=good(); obs[Symbol('secret')]='not hashed';
+    assert.throws(() => replay([obs],trust),/NON_JSON_SYMBOL_KEY/);
+  });
+  it('rejects own non-enumerable observation fields otherwise invisible to JSON', () => {
+    const obs=good();
+    Object.defineProperty(obs,'unit',{value:'radian',enumerable:false,configurable:true});
+    assert.throws(() => replay([obs],trust),/NON_ENUMERABLE_PROPERTY/);
+  });
+  it('evaluates the same captured snapshot values that the digest binds', () => {
+    const raw=good();
+    let accesses=0;
+    const deceptive=new Proxy(raw,{get(target,key,receiver){
+      if (key==='unit') {accesses++;return 'meter';}
+      return Reflect.get(target,key,receiver);
+    }});
+    const normal=replay([raw],trust);
+    const observed=replay([deceptive],trust);
+    assert.equal(observed.decisions[0].ok,true);
+    assert.deepEqual(observed,normal);
+    assert.equal(accesses,0);
+  });
   it('rejects oversized clock decimals before BigInt parsing in direct admission', () => {
     const obs=good({clock_offset_uncertainty_ns:'1'.repeat(100000)});
     const result=checkObservation(obs, trust);
