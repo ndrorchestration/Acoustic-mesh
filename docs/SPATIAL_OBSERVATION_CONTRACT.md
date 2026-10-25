@@ -11,6 +11,7 @@ Files:
 - contracts/spatial-observation.test.mjs — synthetic positive/negative regression corpus and input-bound receipt tests
 - contracts/spatial-schema-cases.json — shared schema versus contextual admission cases
 - contracts/test_spatial_schema_202012.py — independent JSON Schema Draft 2020-12 fixture runner (pinned validator)
+- contracts/test_spatial_psd_oracle.py — dependency-free Python exact-rational principal-minor oracle for 95 deterministic 2–4D covariance matrices, compared to Node
 - .github/workflows/spatial-observation.yml — separate PR/push conformance job
 
 ## Verification
@@ -19,11 +20,11 @@ Run Node >=22: `node --test contracts/spatial-observation.test.mjs`.
 Separately validate JSON Schema meta-schema and shared positive/negative fixture cases, in Python >=3.12:
 ```bash
 python -m pip install 'jsonschema[format]==4.23.0'
-python -m unittest discover -s contracts -p 'test_spatial_schema_202012.py' -v
+python -m unittest discover -s contracts -p 'test_spatial_*.py' -v
 ```
 The GitHub PR workflow runs both checks. Structural schema validity (`schema_valid`) is **not** the same as trusted-context admission (`node_valid`). This suite exercises defined fixtures and does not prove all-schema semantic equivalence or adversarial completeness.
 
-The Node checker implements a **bounded subset** of the schema plus receiver-supplied registry-aware semantic checks. It is **not** a general JSON Schema 2020-12 implementation; the independent Python schema validator validates the shared fixtures but does not establish whole-program equivalence. G-SPAT-0 remains open pending owner review, extended hostile/negative corpus and receiver-specific trust enforcement. The current checker screens small covariance matrices for numerical positive-semidefiniteness (PSD) using normalized, pivoted Schur elimination and a relative tolerance of 1e-12. That check is **not** a proof of physically valid uncertainty, calibrated cross-correlation, clock-synchronization physics, transform math, sensor authentication or physical capture. Nearly singular inputs require independently reviewed numerical bounds.
+The Node checker implements a **bounded subset** of the schema plus receiver-supplied registry-aware semantic checks. It is **not** a general JSON Schema 2020-12 implementation; the independent Python schema validator validates the shared fixtures but does not establish whole-program equivalence. G-SPAT-0 remains open pending owner review, extended hostile/negative corpus and receiver-specific trust enforcement. The current checker screens small covariance matrices for numerical positive-semidefiniteness (PSD) using normalized, pivoted Schur elimination and a relative tolerance of 1e-12. An independently written Python standard-library test computes all exact principal minors of 95 deterministic small covariance matrices (2–4D, away from numerical tolerance boundaries) and compares its classification with Node. It is independent *mathematical implementation*, **not** independent external authorship or peer review. The runtime PSD check remains a heuristic numerical gate, **not** a proof of physically valid uncertainty, calibrated cross-correlation, clock-synchronization physics, transform math, sensor authentication or physical capture. Nearly singular inputs require independently reviewed numerical bounds.
 
 Acceptance proposal: all predefined synthetic positive and negative cases classify as designed, receipt stable across identical JSON fixtures and *different* when measurements/trusted context differ; exact-head hosted Node/Python CI evidence; then independent receiver review, broader schema coverage and calibrated physical evaluation before adoption.
 
@@ -39,7 +40,7 @@ Acceptance proposal: all predefined synthetic positive and negative cases classi
 ## Bounded input and refusal policy (synthetic engineering profile)
 - At most 128 observations per replay, 8 measurement dimensions (up to 64 covariance entries), 16 quality flags and 128 configured trusted sensors. Identifier fields are capped at 128 characters; decimal clock strings at 40 characters.
 - The canonical replay digest rejects non-JSON numbers, undefined values, cycles/reused in-memory object references, excessive nesting (depth over 24), excessive aggregate strings (over 1 MiB), too many tree nodes and input bytes over 2 MiB. These are defensive operational caps **for this draft** and must be reviewed against actual receiving workloads; they are not sensor physics or normative standards.
-- For any invalid or oversized input, **no successful admission/fusion** is recorded; some grossly invalid replay payloads raise a typed exception rather than returning a digest. Consumers must handle such exceptions as refusal, not retry/approval.
+- For any invalid or oversized input, **no successful admission/fusion** is recorded; some grossly invalid replay payloads raise a typed exception rather than returning a digest. Direct clock admission limits decimal parsing to 40 characters before constructing arbitrary-precision integers and refuses malformed prior stream timestamps. Consumers must handle such exceptions as refusal, not retry/approval.
 - The Node in-memory checker does not replace the independently executed JSON Schema 2020-12 validator. The Python stage verifies positive/negative structural cases separately from contextual (sensor/clock/frame/unit/provenance) admission.
 - A local trusted map is only a receiver-supplied *fixture*, not proof that an actual device, principal or calibration authority was authenticated. Hardware/device identity attestation, consent, transform validity and physical error distributions remain future gates.
 
