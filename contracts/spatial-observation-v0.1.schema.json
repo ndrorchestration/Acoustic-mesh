@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Spatial observation envelope v0.1 (candidate)",
+  "description": "Experimental cross-modal metadata envelope. Admission also requires trusted clock/frame/calibration checks. Does not establish sensor accuracy.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "observation_id",
+    "modality",
+    "device_id",
+    "sensor_id",
+    "sequence",
+    "monotonic_time_ns",
+    "timebase_id",
+    "clock_offset_uncertainty_ns",
+    "frame_id",
+    "transform_revision",
+    "unit",
+    "measurement",
+    "uncertainty",
+    "quality_flags",
+    "calibration_id",
+    "software_git_sha",
+    "firmware_version",
+    "raw_artifact_sha256",
+    "dataset_trial_id",
+    "consent_retention_class"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.1.0"
+    },
+    "observation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "modality": {
+      "enum": [
+        "acoustic",
+        "wifi_csi",
+        "imu"
+      ]
+    },
+    "device_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sensor_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "monotonic_time_ns": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)$"
+    },
+    "timebase_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "wall_clock_anchor_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "clock_offset_uncertainty_ns": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)$"
+    },
+    "frame_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "transform_revision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "unit": {
+      "enum": [
+        "radian",
+        "meter",
+        "meter_per_second",
+        "meter_per_second_squared",
+        "radian_per_second",
+        "dbfs",
+        "unitless"
+      ]
+    },
+    "measurement": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "number"
+      }
+    },
+    "uncertainty": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "values"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "stddev",
+            "covariance"
+          ]
+        },
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "quality_flags": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "calibration_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "software_git_sha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "firmware_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "raw_artifact_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "dataset_trial_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "consent_retention_class": {
+      "enum": [
+        "synthetic",
+        "consented-local",
+        "public-dataset"
+      ]
+    }
+  }
+}
