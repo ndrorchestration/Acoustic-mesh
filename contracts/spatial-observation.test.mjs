@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { checkObservation, replay } from './spatial-observation-validator.mjs';
+import { checkObservation, replay, isNumericallyPsd } from './spatial-observation-validator.mjs';
 
 const digest = (s) => createHash('sha256').update(s).digest('hex');
 const trust = {
@@ -86,6 +86,40 @@ describe('SPATIAL-OBS-CONTRACT-01 synthetic candidate', () => {
     const one=good({observation_id:'stream-a',device_id:'a|b',sensor_id:'c',timebase_id:'d'});
     const two=good({observation_id:'stream-b',device_id:'a',sensor_id:'b|c',timebase_id:'d'});
     assert.deepEqual(replay([one,two],trusted).decisions.map(x=>x.ok),[true,true]);
+  });
+  it('numerically rejects an indefinite symmetric covariance', () => {
+    assert.equal(isNumericallyPsd([1,2,2,1],2),false);
+    assert.ok(checkObservation(good({uncertainty:{kind:'covariance',values:[1,2,2,1]}}),trust).reasons.includes('COVARIANCE_NOT_PSD'));
+  });
+  it('accepts valid semidefinite covariance without claiming physical calibration', () => {
+    assert.equal(isNumericallyPsd([1,1,1,1],2),true);
+    assert.equal(checkObservation(good({uncertainty:{kind:'covariance',values:[1,1,1,1]}}),trust).ok,true);
+  });
+  it('blocks zero-diagonal covariance with nonzero correlation', () => {
+    assert.equal(isNumericallyPsd([0,1,1,0],2),false);
+  });
+  it('refuses duplicated observation identities, even with monotonic sensor time', () => {
+    const rows = [good(),good({sequence:2,monotonic_time_ns:'9007199254740993001'})];
+    const v = replay(rows,trust);
+    assert.equal(v.decisions[0].ok,true);
+    assert.ok(v.decisions[1].reasons.includes('DUPLICATE_OBSERVATION_ID'));
+    assert.equal(v.decisions[1].ok,false);
+  });
+  it('fails closed on excessive batch size', () => {
+    assert.throws(() => replay(Array.from({length:129},(_,i)=>good({observation_id:'obs-'+i})),trust),/BATCH_SIZE_LIMIT/);
+  });
+  it('fails closed on recursive untrusted inputs', () => {
+    const cyclic=good(); cyclic.extra=cyclic;
+    assert.throws(() => replay([cyclic],trust),/CYCLIC_OR_SHARED_OBJECT/);
+  });
+  it('fails closed on deep untrusted inputs and huge strings', () => {
+    const deeplyNested=good(); let v=deeplyNested;
+    for(let i=0;i<30;i++){v.extra={};v=v.extra;}
+    assert.throws(() => replay([deeplyNested],trust),/JSON_COMPLEXITY_LIMIT/);
+    assert.throws(() => replay([good({observation_id:'x'.repeat(1100000)})],trust),/JSON_SIZE_LIMIT/);
+  });
+  it('refuses unknown dimensions before attempting matrix decomposition', () => {
+    assert.ok(checkObservation(good({measurement:Array(9).fill(0)}),trust).reasons.includes('ARRAY_MAXIMUM:measurement'));
   });
   it('binds receipts to changed measurements despite unchanged verdicts', () => {
     const a = replay([good()], trust);
