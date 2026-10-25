@@ -33,7 +33,10 @@ const invalid = [
   ['hash-not-sha256', { raw_artifact_sha256: 'x' }, 'PATTERN:raw_artifact_sha256'],
   ['unknown-field', { fantasy_metric: 10 }, 'UNKNOWN:fantasy_metric'],
   ['duplicate-quality-flag', { quality_flags: ['drop','drop'] }, 'INVALID_FLAGS'],
-  ['invalid-measurement', { measurement: [Number.NaN] }, 'INVALID_MEASUREMENT']
+  ['invalid-measurement', { measurement: [Number.NaN] }, 'INVALID_MEASUREMENT'],
+  ['negative-variance', { uncertainty: { kind: 'covariance', values: [-0.1,0,0,0.1] } }, 'NEGATIVE_VARIANCE'],
+  ['negative-stddev', { uncertainty: { kind: 'stddev', values: [-0.1,0.2] } }, 'NEGATIVE_STDDEV'],
+  ['flagged-packet-loss', { quality_flags: ['packet_loss'] }, 'QUALITY_BLOCKED']
 ];
 describe('SPATIAL-OBS-CONTRACT-01 synthetic candidate', () => {
   it('admits bounded valid synthetic envelope', () => assert.equal(checkObservation(good(), trust).ok, true));
@@ -49,6 +52,13 @@ describe('SPATIAL-OBS-CONTRACT-01 synthetic candidate', () => {
     const batch = replay([good(),good({observation_id:'trial-01/obs-2',sequence:1,monotonic_time_ns:'9007199254740993000'})],trust);
     assert.equal(batch.decisions[0].ok,true);
     assert.ok(batch.decisions[1].reasons.includes('NON_MONOTONIC'));
+  });
+  it('admits valid negative off-diagonal covariance correlations (without PSD guarantee)', () => {
+    assert.equal(checkObservation(good({uncertainty:{kind:'covariance',values:[0.04,-0.01,-0.01,0.09]}}),trust).ok,true);
+  });
+  it('refuses dropped sequence gaps', () => {
+    const batch = replay([good(),good({observation_id:'trial-01/obs-3',sequence:3,monotonic_time_ns:'9007199254740993002'})],trust);
+    assert.ok(batch.decisions[1].reasons.includes('SEQUENCE_GAP'));
   });
   it('accepts ordered timestamps beyond JS safe integer', () => {
     const batch = replay([good(),good({observation_id:'trial-01/obs-2',sequence:2,monotonic_time_ns:'9007199254740993001'})],trust);
