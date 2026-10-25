@@ -46,7 +46,7 @@ export function checkObservation(o, trusted, previous = new Map()) {
   if (!decimal(o.monotonic_time_ns) || !decimal(o.clock_offset_uncertainty_ns)) reasons.push('INVALID_CLOCK_NUMBER');
   if (o.wall_clock_anchor_utc !== undefined) {
     const v = o.wall_clock_anchor_utc;
-    const parsed = typeof v === 'string' && /^(\\d{4})-(0[1-9]|1[0-2])-([0-2][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\\.[0-9]+)?Z$/.test(v) ? Date.parse(v) : NaN;
+    const parsed = typeof v === 'string' && /^(\d{4})-(0[1-9]|1[0-2])-([0-2][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\.[0-9]+)?Z$/.test(v) ? Date.parse(v) : NaN;
     if (!Number.isFinite(parsed) || new Date(parsed).toISOString().slice(0,19) !== v.slice(0,19)) reasons.push('INVALID_WALL_ANCHOR');
   }
   if (!Array.isArray(o.measurement) || !o.measurement.length || !o.measurement.every(finite)) reasons.push('INVALID_MEASUREMENT');
