@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Spatial observation envelope v0.1 (candidate)",
+  "description": "Experimental cross-modal metadata envelope. Admission also requires trusted clock/frame/calibration checks. Does not establish sensor accuracy. Bounded fixture profile: at most 8 measurement dimensions and 16 quality flags; PSD and trust checks are contextual, not JSON Schema claims.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "observation_id",
+    "modality",
+    "device_id",
+    "sensor_id",
+    "sequence",
+    "monotonic_time_ns",
+    "timebase_id",
+    "clock_offset_uncertainty_ns",
+    "frame_id",
+    "transform_revision",
+    "unit",
+    "measurement",
+    "uncertainty",
+    "quality_flags",
+    "calibration_id",
+    "software_git_sha",
+    "firmware_version",
+    "raw_artifact_sha256",
+    "dataset_trial_id",
+    "consent_retention_class"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.1.0"
+    },
+    "observation_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "modality": {
+      "enum": [
+        "acoustic",
+        "wifi_csi",
+        "imu"
+      ]
+    },
+    "device_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "sensor_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "monotonic_time_ns": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,39})$",
+      "maxLength": 40
+    },
+    "timebase_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "wall_clock_anchor_utc": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-(0[1-9]|1[0-2])-([0-2][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\\.[0-9]+)?Z$",
+      "maxLength": 40
+    },
+    "clock_offset_uncertainty_ns": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,39})$",
+      "maxLength": 40
+    },
+    "frame_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "transform_revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "unit": {
+      "enum": [
+        "radian",
+        "meter",
+        "meter_per_second",
+        "meter_per_second_squared",
+        "radian_per_second",
+        "dbfs",
+        "unitless"
+      ]
+    },
+    "measurement": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "number"
+      },
+      "maxItems": 8
+    },
+    "uncertainty": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "values"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "stddev",
+            "covariance"
+          ]
+        },
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 64
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "stddev"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "values": {
+                "items": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "quality_flags": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "maxItems": 16
+    },
+    "calibration_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "software_git_sha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "firmware_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "raw_artifact_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "dataset_trial_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "consent_retention_class": {
+      "enum": [
+        "synthetic",
+        "consented-local",
+        "public-dataset"
+      ]
+    }
+  }
+}
