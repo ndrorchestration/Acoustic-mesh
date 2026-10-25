@@ -72,6 +72,21 @@ describe('SPATIAL-OBS-CONTRACT-01 synthetic candidate', () => {
       assert.equal(v.ok, fixture.node_valid, JSON.stringify({fixture:fixture.name,reasons:v.reasons}));
     });
   }
+  it('refuses inherited Object prototype names as unknown producer fields', () => {
+    const v = checkObservation(good({constructor: 'bogus', toString: 'shadow'}), trust);
+    assert.ok(v.reasons.includes('UNKNOWN:constructor'));
+    assert.ok(v.reasons.includes('UNKNOWN:toString'));
+  });
+  it('keeps two delimited stream identities distinct', () => {
+    const original = trust.sensors['sim-mic-1'];
+    const trusted = {...trust, sensors: {
+      'c': {...original, device_id:'a|b',timebase_id:'d'},
+      'b|c': {...original, device_id:'a',timebase_id:'d'}
+    }};
+    const one=good({observation_id:'stream-a',device_id:'a|b',sensor_id:'c',timebase_id:'d'});
+    const two=good({observation_id:'stream-b',device_id:'a',sensor_id:'b|c',timebase_id:'d'});
+    assert.deepEqual(replay([one,two],trusted).decisions.map(x=>x.ok),[true,true]);
+  });
   it('binds receipts to changed measurements despite unchanged verdicts', () => {
     const a = replay([good()], trust);
     const b = replay([good({measurement:[0.3, 0.5]})], trust);
