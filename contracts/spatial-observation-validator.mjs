@@ -9,20 +9,82 @@ const plain = (x) => x !== null && typeof x === 'object' && !Array.isArray(x);
 const finite = (x) => typeof x === 'number' && Number.isFinite(x);
 const keyOf = (o) => JSON.stringify([o.device_id, o.sensor_id, o.timebase_id]);
 
-/** Stable JSON-only encoding; fail closed on non-JSON or non-finite values. */
+/** Stable, bounded JSON-only encoding; fail closed on cycles, non-finite and non-JSON values. */
 export function canonical(value) {
-  if (value === null) return 'null';
-  if (typeof value === 'string' || typeof value === 'boolean') return JSON.stringify(value);
-  if (typeof value === 'number') {
-    if (!Number.isFinite(value)) throw new TypeError('NON_JSON_NUMBER');
-    return JSON.stringify(value);
+  const seen = new WeakSet();
+  let nodes = 0;
+  let characters = 0;
+  const encode = (v, depth) => {
+    if (++nodes > 20000 || depth > 24) throw new TypeError('JSON_COMPLEXITY_LIMIT');
+    if (v === null) return 'null';
+    if (typeof v === 'string') {
+      characters += v.length;
+      if (characters > 1048576) throw new TypeError('JSON_SIZE_LIMIT');
+      return JSON.stringify(v);
+    }
+    if (typeof v === 'boolean') return JSON.stringify(v);
+    if (typeof v === 'number') {
+      if (!Number.isFinite(v)) throw new TypeError('NON_JSON_NUMBER');
+      return JSON.stringify(v);
+    }
+    if (typeof v === 'object') {
+      if (seen.has(v)) throw new TypeError('CYCLIC_OR_SHARED_OBJECT');
+      seen.add(v);
+      if (Array.isArray(v)) {
+        if (v.length > 8192) throw new TypeError('JSON_ARRAY_LIMIT');
+        return '[' + v.map(item => encode(item, depth + 1)).join(',') + ']';
+      }
+      if (!plain(v) || (Object.getPrototypeOf(v) !== Object.prototype &&
+        Object.getPrototypeOf(v) !== null)) throw new TypeError('NON_JSON_OBJECT');
+      const keys = Object.keys(v).sort();
+      if (keys.length > 512) throw new TypeError('JSON_OBJECT_LIMIT');
+      return '{' + keys.map(k => {
+        characters += k.length;
+        if (characters > 1048576) throw new TypeError('JSON_SIZE_LIMIT');
+        return JSON.stringify(k) + ':' + encode(v[k], depth + 1);
+      }).join(',') + '}';
+    }
+    throw new TypeError('NON_JSON_VALUE');
+  };
+  return encode(value, 0);
+}
+
+/** Numerical PSD guard for small symmetric covariance matrices (not uncertainty calibration).
+ * Pivoted symmetric Schur elimination with relative tolerance 1e-12.
+ * Matrices close to singular may require receiver-specific numerical review.
+ */
+export function isNumericallyPsd(values, n) {
+  if (!Array.isArray(values) || !Number.isSafeInteger(n) || n < 1 || n > 8 ||
+      values.length !== n * n || !values.every(finite)) return false;
+  const scale = Math.max(...values.map(v => Math.abs(v)));
+  if (scale === 0) return true;
+  const a = Array.from({length:n},(_,i) =>
+    Array.from({length:n},(_,j) => values[i*n+j] / scale));
+  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+    if (Math.abs(a[i][j] - a[j][i]) > 1e-10) return false;
   }
-  if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';
-  if (plain(value)) {
-    if (Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null) throw new TypeError('NON_JSON_OBJECT');
-    return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + canonical(value[k])).join(',') + '}';
+  const tol = 1e-12;
+  for (let k = 0; k < n; k++) {
+    let best = k;
+    for (let i = k + 1; i < n; i++) if (a[i][i] > a[best][best]) best = i;
+    if (best !== k) {
+      [a[k], a[best]] = [a[best], a[k]];
+      for (let i = 0; i < n; i++) [a[i][k], a[i][best]] = [a[i][best], a[i][k]];
+    }
+    const pivot = a[k][k];
+    if (pivot < -tol) return false;
+    if (pivot <= tol) {
+      for (let i = k; i < n; i++) for (let j = k; j < n; j++)
+        if (Math.abs(a[i][j]) > tol) return false;
+      return true;
+    }
+    for (let i = k + 1; i < n; i++) for (let j = i; j < n; j++) {
+      const updated = a[i][j] - a[i][k] * a[j][k] / pivot;
+      a[i][j] = updated;
+      a[j][i] = updated;
+    }
   }
-  throw new TypeError('NON_JSON_VALUE');
+  return true;
 }
 
 /** Candidate, dependency-free bounded checker; NOT a full JSON Schema 2020-12 engine. */
@@ -38,8 +100,10 @@ export function checkObservation(o, trusted, previous = new Map()) {
     if (p.const !== undefined && v !== p.const) reasons.push('CONST:' + k);
     if (p.enum && !p.enum.includes(v)) reasons.push('ENUM:' + k);
     if (p.type === 'string' && (typeof v !== 'string' || (p.minLength && v.length < p.minLength))) reasons.push('STRING:' + k);
+    if (p.maxLength && typeof v === 'string' && v.length > p.maxLength) reasons.push('STRING_MAXIMUM:' + k);
     if (p.type === 'integer' && (!Number.isSafeInteger(v) || v < (p.minimum ?? 0))) reasons.push('INTEGER:' + k);
     if (p.type === 'array' && (!Array.isArray(v) || v.length < (p.minItems ?? 0))) reasons.push('ARRAY:' + k);
+    if (p.maxItems && Array.isArray(v) && v.length > p.maxItems) reasons.push('ARRAY_MAXIMUM:' + k);
     if (p.type === 'object' && !plain(v)) reasons.push('OBJECT:' + k);
     if (p.pattern && (typeof v !== 'string' || !new RegExp(p.pattern).test(v))) reasons.push('PATTERN:' + k);
   }
@@ -50,9 +114,9 @@ export function checkObservation(o, trusted, previous = new Map()) {
     if (!Number.isFinite(parsed) || new Date(parsed).toISOString().slice(0,19) !== v.slice(0,19)) reasons.push('INVALID_WALL_ANCHOR');
   }
   if (!Array.isArray(o.measurement) || !o.measurement.length || !o.measurement.every(finite)) reasons.push('INVALID_MEASUREMENT');
-  if (!Array.isArray(o.quality_flags) || !o.quality_flags.every(x => typeof x === 'string' && x.length > 0) || new Set(o.quality_flags).size !== o.quality_flags.length) reasons.push('INVALID_FLAGS');
+  if (!Array.isArray(o.quality_flags) || o.quality_flags.length > 16 || !o.quality_flags.every(x => typeof x === 'string' && x.length > 0 && x.length <= 128) || new Set(o.quality_flags).size !== o.quality_flags.length) reasons.push('INVALID_FLAGS');
   const u = o.uncertainty;
-  if (!plain(u) || !['stddev', 'covariance'].includes(u.kind) || !Array.isArray(u.values) || !u.values.every(finite) || Object.keys(u).some(k => !['kind','values'].includes(k))) reasons.push('INVALID_UNCERTAINTY');
+  if (!plain(u) || !['stddev', 'covariance'].includes(u.kind) || !Array.isArray(u.values) || u.values.length < 1 || u.values.length > 64 || !u.values.every(finite) || Object.keys(u).some(k => !['kind','values'].includes(k))) reasons.push('INVALID_UNCERTAINTY');
   else if (Array.isArray(o.measurement)) {
     const n = o.measurement.length;
     if (u.values.length !== (u.kind === 'stddev' ? n : n*n)) reasons.push('UNCERTAINTY_DIMENSION');
@@ -63,6 +127,7 @@ export function checkObservation(o, trusted, previous = new Map()) {
       for(let i=0;i<n;i++) for(let j=i+1;j<n;j++) {
         if(Math.abs(u.values[i*n+j] - u.values[j*n+i]) > 1e-9) reasons.push('COVARIANCE_NOT_SYMMETRIC');
       }
+      if (n <= 8 && !isNumericallyPsd(u.values, n)) reasons.push('COVARIANCE_NOT_PSD');
     }
   }
   const pair = trusted?.sensors && Object.hasOwn(trusted.sensors, o.sensor_id) ? trusted.sensors[o.sensor_id] : null;
@@ -83,12 +148,25 @@ export function checkObservation(o, trusted, previous = new Map()) {
 /** Replay emits a payload/context-bound receipt, not proof of real artifact custody. */
 export function replay(observations, trusted) {
   if (!Array.isArray(observations)) throw new TypeError('OBSERVATIONS_NOT_ARRAY');
+  if (observations.length > 128) throw new TypeError('BATCH_SIZE_LIMIT');
+  if (!plain(trusted) || !plain(trusted.sensors) || Object.keys(trusted.sensors).length > 128) throw new TypeError('INVALID_TRUST_CONTEXT');
   // A change in any input field or receiver trust map MUST alter the receipt.
   // Hashes are not signatures, approvals or attestations of raw hardware data.
-  const input_sha256 = sha(canonical({ observations, trusted }));
+  const bytes = canonical({ observations, trusted });
+  if (Buffer.byteLength(bytes, 'utf8') > 2097152) throw new TypeError('INPUT_BYTES_LIMIT');
+  const input_sha256 = sha(bytes);
   const seen = new Map();
+  const seenIds = new Set();
   const decisions = observations.map((o, index) => {
     const verdict = checkObservation(o, trusted, seen);
+    if (typeof o?.observation_id === 'string') {
+      if (seenIds.has(o.observation_id)) {
+        verdict.reasons.push('DUPLICATE_OBSERVATION_ID');
+        verdict.reasons.sort();
+        verdict.ok = false;
+      }
+      seenIds.add(o.observation_id);
+    }
     if (verdict.ok) seen.set(keyOf(o), { sequence: o.sequence, monotonic_time_ns: o.monotonic_time_ns });
     return { index, observation_id: o?.observation_id ?? null, ...verdict };
   });
