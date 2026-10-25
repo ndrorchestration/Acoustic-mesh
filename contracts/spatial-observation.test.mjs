@@ -118,6 +118,22 @@ describe('SPATIAL-OBS-CONTRACT-01 synthetic candidate', () => {
     assert.throws(() => replay([deeplyNested],trust),/JSON_COMPLEXITY_LIMIT/);
     assert.throws(() => replay([good({observation_id:'x'.repeat(1100000)})],trust),/JSON_SIZE_LIMIT/);
   });
+  it('rejects accessor-backed observations without running the getter', () => {
+    const o=good();
+    let accesses=0;
+    Object.defineProperty(o,'measurement',{enumerable:true,configurable:true,
+      get(){accesses++;return [0.3,0.4];}});
+    assert.throws(() => replay([o],trust),/ACCESSOR_NOT_JSON/);
+    assert.equal(accesses,0);
+  });
+  it('rejects accessor-backed receiver trust without evaluating its contents', () => {
+    const t={...trust};
+    let accesses=0;
+    Object.defineProperty(t,'max_clock_uncertainty_ns',{enumerable:true,
+      get(){accesses++;return '5000000';}});
+    assert.throws(() => replay([good()],t),/ACCESSOR_NOT_JSON/);
+    assert.equal(accesses,0);
+  });
   it('rejects oversized clock decimals before BigInt parsing in direct admission', () => {
     const obs=good({clock_offset_uncertainty_ns:'1'.repeat(100000)});
     const result=checkObservation(obs, trust);
