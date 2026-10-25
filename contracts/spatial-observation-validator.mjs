@@ -38,12 +38,14 @@ export function checkObservation(o, trusted, previous = new Map()) {
   if (!Array.isArray(o.measurement) || !o.measurement.length || !o.measurement.every(finite)) reasons.push('INVALID_MEASUREMENT');
   if (!Array.isArray(o.quality_flags) || !o.quality_flags.every(x => typeof x === 'string' && x.length > 0) || new Set(o.quality_flags).size !== o.quality_flags.length) reasons.push('INVALID_FLAGS');
   const u = o.uncertainty;
-  if (!plain(u) || !['stddev', 'covariance'].includes(u.kind) || !Array.isArray(u.values) || !u.values.every(x => finite(x) && x >= 0) || Object.keys(u).some(k => !['kind','values'].includes(k))) reasons.push('INVALID_UNCERTAINTY');
+  if (!plain(u) || !['stddev', 'covariance'].includes(u.kind) || !Array.isArray(u.values) || !u.values.every(finite) || Object.keys(u).some(k => !['kind','values'].includes(k))) reasons.push('INVALID_UNCERTAINTY');
   else if (Array.isArray(o.measurement)) {
     const n = o.measurement.length;
     if (u.values.length !== (u.kind === 'stddev' ? n : n*n)) reasons.push('UNCERTAINTY_DIMENSION');
+    if (u.kind === 'stddev' && u.values.some(x => x < 0)) reasons.push('NEGATIVE_STDDEV');
     // Covariance PSD and cross-sensor correlations are NOT certified by this bounded checker.
     if (u.kind === 'covariance' && u.values.length === n*n) {
+      for(let i=0;i<n;i++) if (u.values[i*n+i] < 0) reasons.push('NEGATIVE_VARIANCE');
       for(let i=0;i<n;i++) for(let j=i+1;j<n;j++) {
         if(Math.abs(u.values[i*n+j] - u.values[j*n+i]) > 1e-9) reasons.push('COVARIANCE_NOT_SYMMETRIC');
       }
@@ -59,6 +61,8 @@ export function checkObservation(o, trusted, previous = new Map()) {
   const prev = previous.get(keyOf(o));
   if (prev && decimal(o.monotonic_time_ns) &&
       (o.sequence <= prev.sequence || BigInt(o.monotonic_time_ns) <= BigInt(prev.monotonic_time_ns))) reasons.push('NON_MONOTONIC');
+  if (prev && Number.isSafeInteger(o.sequence) && o.sequence > prev.sequence + 1) reasons.push('SEQUENCE_GAP');
+  if (Array.isArray(o.quality_flags) && o.quality_flags.some(f => ['packet_loss','calibration_stale','transform_stale','clock_untrusted'].includes(f))) reasons.push('QUALITY_BLOCKED');
   return { ok: reasons.length === 0, reasons: [...new Set(reasons)].sort() };
 }
 
