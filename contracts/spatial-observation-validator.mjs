@@ -7,7 +7,7 @@ const sha = (value) => createHash('sha256').update(value).digest('hex');
 const decimal = (value) => typeof value === 'string' && /^(0|[1-9][0-9]*)$/.test(value);
 const plain = (x) => x !== null && typeof x === 'object' && !Array.isArray(x);
 const finite = (x) => typeof x === 'number' && Number.isFinite(x);
-const keyOf = (o) => [o.device_id, o.sensor_id, o.timebase_id].join('|');
+const keyOf = (o) => JSON.stringify([o.device_id, o.sensor_id, o.timebase_id]);
 
 /** Stable JSON-only encoding; fail closed on non-JSON or non-finite values. */
 export function canonical(value) {
@@ -30,7 +30,7 @@ export function checkObservation(o, trusted, previous = new Map()) {
   const reasons = [];
   if (!plain(o)) return { ok: false, reasons: ['NOT_OBJECT'] };
   for (const k of required) if (!Object.hasOwn(o, k)) reasons.push('MISSING:' + k);
-  for (const k of Object.keys(o)) if (!(k in props)) reasons.push('UNKNOWN:' + k);
+  for (const k of Object.keys(o)) if (!Object.hasOwn(props, k)) reasons.push('UNKNOWN:' + k);
   if (reasons.length) return { ok: false, reasons };
   for (const [k, p] of Object.entries(props)) {
     if (!(k in o)) continue;
