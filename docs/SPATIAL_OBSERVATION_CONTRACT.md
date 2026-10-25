@@ -12,10 +12,12 @@ Files:
 - contracts/spatial-schema-cases.json — shared schema versus contextual admission cases
 - contracts/test_spatial_schema_202012.py — independent JSON Schema Draft 2020-12 fixture runner (pinned validator)
 - contracts/test_spatial_psd_oracle.py — dependency-free Python exact-rational principal-minor oracle for 95 deterministic 2–4D covariance matrices, compared to Node
+- contracts/spatial-receiver-fixture.mjs — **synthetic-only** candidate raw-byte SHA-256 integrity binding, with REFUSE / DEFER / REVIEW_ONLY states
+- contracts/spatial-receiver-fixture.test.mjs — negative controls for missing/tampered/duplicate artifact bytes, wrong policy and non-authorizing status
 - .github/workflows/spatial-observation.yml — separate PR/push conformance job
 
 ## Verification
-Run Node >=22: `node --test contracts/spatial-observation.test.mjs`.
+Run Node >=22: `node --test contracts/*.test.mjs`.
 
 Separately validate JSON Schema meta-schema and shared positive/negative fixture cases, in Python >=3.12:
 ```bash
@@ -43,6 +45,18 @@ Acceptance proposal: all predefined synthetic positive and negative cases classi
 - For any invalid or oversized input, **no successful admission/fusion** is recorded; some grossly invalid replay payloads raise a typed exception rather than returning a digest. Direct clock admission limits decimal parsing to 40 characters before constructing arbitrary-precision integers and refuses malformed prior stream timestamps. Consumers must handle such exceptions as refusal, not retry/approval.
 - The encoder is a local deterministic JSON-only digest format, **not** an RFC 8785 (JCS) interoperability claim or signed source-attestation protocol. Its own-property descriptors are read to prevent getter side effects; the strict serialized snapshot is evaluated instead of the mutable original. This assumes the Node process executing the checker and its runtime are trusted; Proxy traps can still run during descriptor inspection, and the digest cannot authenticate the external sensor or original transport bytes. The Node in-memory checker does not replace the independently executed JSON Schema 2020-12 validator. The Python stage verifies positive/negative structural cases separately from contextual (sensor/clock/frame/unit/provenance) admission.
 - A local trusted map is only a receiver-supplied *fixture*, not proof that an actual device, principal or calibration authority was authenticated. Hardware/device identity attestation, consent, transform validity and physical error distributions remain future gates.
+
+## Receiver-side raw-artifact integrity fixture — NOT an authority gate
+
+The candidate `assessReceiverFixture(observations, trusted, rawArtifacts, policy)` checks raw bytes supplied **by the caller** against the producer-declared `raw_artifact_sha256`, after bounded synthetic observation replay. It produces three states only:
+
+- `REFUSE`: failed underlying observation admission, mismatched SHA-256 digest or duplicate artifact identity.
+- `DEFER`: missing raw bytes or synthetic review policy, missing dataset match, or retention class other than `synthetic`.
+- `REVIEW_ONLY`: all bounded synthetic checks passed, but **no authorization follows**. This is the highest possible state and is not an `ALLOW` decision.
+
+The receiver-side policy is a `synthetic-only` test fixture scoped to an exact dataset trial and `receiver_policy_id`; it is **not** proof of authorization by an independent policy owner. The bytes are snapshotted locally for digest comparison, with an aggregate 2 MiB input limit, and are never written to receipt output. Duplicate or unrelated raw evidence cannot be silently matched to an accepted observation.
+
+This check **does not establish** actual custodian identity, device attestation, a cryptographically signed provenance chain, enforceable consent/retention policy, calibration, physical accuracy, or sensor trust. Real-data acceptance must require an independently approved receiver trust root, source-authenticated retrieval/custody, policy authority and physical ground-truth experiment. It must not promote any `REVIEW_ONLY` result to permission for fusion, transmission or publication.
 
 ## Standards and research sources
 JSON Schema Draft 2020-12: https://json-schema.org/draft/2020-12/
