@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: '22'
       - name: Node built-in synthetic contract tests
-        run: node --test contracts/spatial-observation.test.mjs
+        run: node --test contracts/*.test.mjs
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
