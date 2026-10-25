@@ -24,7 +24,7 @@ Acceptance proposal: all predefined synthetic positive and negative cases classi
 - `measurement` is an ordered numeric vector; `unit` and `modality` constrain interpretation; uncertainty is a matching standard-deviation vector or row-major covariance.
 - `raw_artifact_sha256` identifies immutable raw input; derived decision receipts are separately hashed. The synthetic fixture hash is not a captured hardware trace.
 - Consent/retention classifications control subsequent use and require independent legal/consent enforcement.
-- Rejection/abstention occurs on missing/untrusted context, wrong frame, calibration, clock, unit, malformed uncertainty, or non-monotonic same-stream observations. Refusals are recorded, not silently fused.
+- Rejection/abstention occurs on missing/untrusted context, wrong frame, calibration, clock, unit, malformed uncertainty, flagged packet loss, sequence gap, or non-monotonic same-stream observations. Signed off-diagonal covariance is permitted; nonnegative diagonal and symmetry are checked, while full PSD remains outside the bounded validator. Refusals are recorded, not silently fused.
 - Different sensor clocks and frames are not unified here. Transform authority and synchronized ground truth remain future prerequisites.
 
 ## Standards and research sources
