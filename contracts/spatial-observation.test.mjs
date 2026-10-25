@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { checkObservation, replay } from './spatial-observation-validator.mjs';
 
 const digest = (s) => createHash('sha256').update(s).digest('hex');
@@ -21,6 +22,7 @@ const good = (extra = {}) => ({
   raw_artifact_sha256: digest('synthetic-capture-only'), dataset_trial_id: 'synthetic-trial-01',
   consent_retention_class: 'synthetic', ...extra
 });
+const schemaCases = JSON.parse(readFileSync(new URL('./spatial-schema-cases.json', import.meta.url), 'utf8'));
 const invalid = [
   ['missing-units', { unit: undefined }, 'MISSING:unit'],
   ['bad-frame', { frame_id: 'unknown' }, 'UNTRUSTED_SENSOR_CONTEXT'],
@@ -63,6 +65,32 @@ describe('SPATIAL-OBS-CONTRACT-01 synthetic candidate', () => {
   it('accepts ordered timestamps beyond JS safe integer', () => {
     const batch = replay([good(),good({observation_id:'trial-01/obs-2',sequence:2,monotonic_time_ns:'9007199254740993001'})],trust);
     assert.deepEqual(batch.decisions.map(d => d.ok),[true,true]);
+  });
+  for (const fixture of schemaCases.cases) {
+    it('matches schema-case observation admissibility: ' + fixture.name, () => {
+      const v = checkObservation(fixture.observation, trust);
+      assert.equal(v.ok, fixture.node_valid, JSON.stringify({fixture:fixture.name,reasons:v.reasons}));
+    });
+  }
+  it('binds receipts to changed measurements despite unchanged verdicts', () => {
+    const a = replay([good()], trust);
+    const b = replay([good({measurement:[0.3, 0.5]})], trust);
+    assert.deepEqual(a.decisions, b.decisions);
+    assert.notEqual(a.input_sha256, b.input_sha256);
+    assert.notEqual(a.receipt_sha256, b.receipt_sha256);
+  });
+  it('binds receipts to changed trusted context', () => {
+    const a = replay([good()], trust);
+    const b = replay([good()], {...trust, max_clock_uncertainty_ns:'5000001'});
+    assert.deepEqual(a.decisions, b.decisions);
+    assert.notEqual(a.receipt_sha256, b.receipt_sha256);
+  });
+  it('rejects non-JSON non-finite data before issuing a receipt', () => {
+    assert.throws(() => replay([good({measurement:[NaN]})],trust),/NON_JSON_NUMBER/);
+  });
+  it('keeps equivalent JSON object key order stable', () => {
+    const o = good(); const reordered=Object.fromEntries(Object.entries(o).reverse());
+    assert.equal(replay([o],trust).receipt_sha256,replay([reordered],trust).receipt_sha256);
   });
   it('deterministically replays byte-identical fixture sequence', () => {
     const observations = [good(),good({observation_id:'trial-01/obs-2',sequence:2,monotonic_time_ns:'9007199254740993001'})];
